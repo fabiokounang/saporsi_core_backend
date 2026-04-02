@@ -1,45 +1,18 @@
 // utils/db.js
 const mysql = require("mysql2/promise");
-// console.log('====================', {
-//       host: process.env.DB_HOST,
-//       port: Number(process.env.DB_PORT),
-//       user: process.env.DB_USER,
-//       password: process.env.DB_PASSWORD,
-//       database: process.env.DB_NAME
-//     })
-(async () => {
-  try {
-    const conn = await mysql.createConnection({
-      host: "mysql.railway.internal",
-      port: 3306,
-      user: "root",
-      password: "xxwgsPEowuNCmYoOWXvRbosNbyUjvhKJ",
-      database: "saporsi_core"
-    });
-
-    await conn.query('SELECT 1');
-    console.log('✅ DB CONNECT OK');
-    await conn.end();
-  } catch (err) {
-    console.error('❌ DB CONNECT FAIL');
-    console.error(err);
-  }
-})();
 
 const pool = mysql.createPool({
-  host: "mysql.railway.internal",
-  port: 3306,
-  user: "root",
-  password: "xxwgsPEowuNCmYoOWXvRbosNbyUjvhKJ",
-  database: "saporsi_core",
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: Number(process.env.DB_POOL_LIMIT || 10),
   queueLimit: 0,
   timezone: "+00:00"
   // namedPlaceholders: true, // optional
 });
-
-pool.query(`UPDATE users SET password_hash = '$2b$12$BQj9lQ66YsqrwLhpeFVuUOjcoIBIruvu4NUKP0VYltmLPxT4V29DS' WHERE id = 1`).then((r) => {}).catch((e) => {console.error(e)});
 
 async function pingDb() {
   const conn = await pool.getConnection();

@@ -196,8 +196,6 @@ app.use((req, res) => {
 // Error Handler
 // =========================
 app.use((err, req, res, next) => {
-  console.error(err);
-
   const isDev = process.env.NODE_ENV !== "production";
   return res.status(500).render("errors/500", {
     title: "Server Error",
