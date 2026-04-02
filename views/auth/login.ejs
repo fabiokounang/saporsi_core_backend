@@ -6,270 +6,184 @@
   <title><%= title %> • Saporsi Core</title>
 
   <style>
-    :root{
-      --orange:#ff8a00;
-      --orange-soft:#fff2e5;
-      --orange-dark:#e36f00;
-      --bg:#fff8f1;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --border:#e5e7eb;
-      --danger:#ef4444;
-      --radius:18px;
-      --shadow:0 20px 45px rgba(0,0,0,.08);
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-
-    body{
-      margin:0;
-      font-family:var(--font);
+    .page {
+      min-height: 100vh;
+      width: 100%;
+      padding: 28px;
       background:
-        radial-gradient(900px 500px at 10% 10%, #ffe0bf, transparent 60%),
-        radial-gradient(700px 500px at 90% 20%, #ffd1a3, transparent 55%),
-        var(--bg);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      color:var(--text);
+        radial-gradient(900px 500px at -10% -10%, #e9d5ff 0%, transparent 60%),
+        radial-gradient(900px 520px at 110% 10%, #fbcfe8 0%, transparent 55%),
+        linear-gradient(120deg, #fff9f5 0%, #fff2ea 100%);
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
     }
 
-    .wrap{
-      width:min(980px,100%);
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:32px;
-      align-items:stretch;
+    .panel-hero {
+      border-radius: 26px;
+      padding: 38px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, #7c3aed 0%, #db2777 100%);
+      color: #fff;
+      box-shadow: 0 24px 60px rgba(124, 58, 237, 0.22);
     }
 
-    @media(max-width:900px){
-      .wrap{grid-template-columns:1fr; max-width:520px;}
+    .panel-hero::before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -130px;
+      top: -120px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,255,255,.3), rgba(255,255,255,0) 65%);
     }
 
-    /* LEFT */
-    .brand{
-      background:linear-gradient(160deg,#ffb866,#ff8a00);
-      color:white;
-      border-radius:var(--radius);
-      padding:36px;
-      box-shadow:var(--shadow);
-      position:relative;
-      overflow:hidden;
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .logo-badge {
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,.22);
+      border: 1px solid rgba(255,255,255,.36);
+      font-weight: 800;
     }
 
-    .brand::after{
-      content:"";
-      position:absolute;
-      width:420px;height:420px;
-      right:-180px;bottom:-220px;
-      background:radial-gradient(circle,#ffffff55,transparent 60%);
+    .panel-hero h1 {
+      margin: 26px 0 10px;
+      font-size: 42px;
+      line-height: 1.08;
+      max-width: 12ch;
     }
 
-    .logo{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      font-weight:800;
-      font-size:18px;
+    .panel-hero p {
+      margin: 0;
+      max-width: 50ch;
+      line-height: 1.7;
+      opacity: .94;
     }
 
-    .logoBox{
-      width:44px;height:44px;
-      background:white;
-      color:var(--orange-dark);
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:900;
-      box-shadow:0 10px 25px rgba(0,0,0,.15);
+    .benefits {
+      margin-top: 26px;
+      display: grid;
+      gap: 10px;
+      max-width: 420px;
     }
 
-    .hero{
-      margin-top:28px;
-      position:relative;
-      z-index:1;
+    .benefit {
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.26);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
     }
 
-    .hero h1{
-      margin:0 0 12px;
-      font-size:36px;
-      line-height:1.15;
+    .panel-form {
+      border-radius: 26px;
+      padding: 28px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid #f1dece;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 16px 42px rgba(96, 58, 34, .12);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    .hero p{
-      margin:0;
-      font-size:15px;
-      line-height:1.6;
-      opacity:.95;
-      max-width:52ch;
+    .panel-form h2 { margin: 0 0 6px; font-size: 26px; color: #2c221f; }
+    .sub { margin: 0 0 18px; color: #7d6e66; font-size: 14px; }
+
+    .alert {
+      margin-bottom: 12px;
+      border-radius: 12px;
+      border: 1px solid #fda4af;
+      background: #fff1f2;
+      color: #9f1239;
+      padding: 10px 12px;
+      font-size: 13px;
     }
 
-    .points{
-      margin-top:26px;
-      display:grid;
-      gap:14px;
-      position:relative;
-      z-index:1;
+    .field { margin-bottom: 12px; }
+    .field label { display: block; margin-bottom: 6px; font-size: 12px; color: #6a5a53; font-weight: 600; }
+    .field input {
+      width: 100%;
+      border: 1px solid #edd9c9;
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px 13px;
+      font-size: 14px;
+      outline: none;
+      transition: .2s ease;
+      color: #2c221f;
     }
 
-    .point{
-      background:rgba(255,255,255,.18);
-      border-radius:14px;
-      padding:14px 16px;
-      backdrop-filter: blur(6px);
+    .field input:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 0 4px rgba(168, 85, 247, .16);
     }
 
-    .point b{
-      display:block;
-      font-size:14px;
-      margin-bottom:4px;
+    .hint { margin: 4px 0 14px; font-size: 12px; color: #8a7a71; }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      box-shadow: 0 14px 30px rgba(139, 92, 246, .26);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    .btn:active { transform: translateY(0); }
+
+    .foot {
+      margin-top: 14px;
+      text-align: center;
+      color: #87786f;
+      font-size: 12px;
+      line-height: 1.5;
     }
 
-    .point small{
-      font-size:13px;
-      opacity:.95;
-      line-height:1.45;
-    }
-
-    /* RIGHT CARD */
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:28px;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
-    }
-
-    .card h2{
-      margin:0 0 6px;
-      font-size:20px;
-    }
-
-    .sub{
-      font-size:13px;
-      color:var(--muted);
-      margin-bottom:18px;
-    }
-
-    .alert{
-      background:#fee2e2;
-      border:1px solid #fecaca;
-      color:#991b1b;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:13px;
-      margin-bottom:14px;
-    }
-
-    label{
-      font-size:13px;
-      display:block;
-      margin-bottom:6px;
-      color:#374151;
-    }
-
-    .field{margin-bottom:14px;}
-
-    input{
-      width:100%;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      font-size:14px;
-      outline:none;
-      transition:.15s;
-      background:white;
-    }
-
-    input:focus{
-      border-color:var(--orange);
-      box-shadow:0 0 0 4px #ff8a0026;
-    }
-
-    .row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin:6px 0 18px;
-      font-size:12.5px;
-      color:var(--muted);
-    }
-
-    .link{
-      color:var(--orange-dark);
-      text-decoration:none;
-      font-weight:600;
-    }
-
-    .link:hover{text-decoration:underline;}
-
-    .btn{
-      width:100%;
-      padding:13px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:700;
-      font-size:14px;
-      background:linear-gradient(135deg,var(--orange),#ffb347);
-      color:white;
-      box-shadow:0 14px 30px rgba(255,138,0,.35);
-      transition:.15s;
-    }
-
-    .btn:hover{transform:translateY(-1px);}
-    .btn:active{transform:translateY(0);}
-
-    .foot{
-      margin-top:16px;
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
+    @media (max-width: 1000px) {
+      .page { grid-template-columns: 1fr; padding: 16px; }
+      .panel-hero { padding: 24px; }
+      .panel-hero h1 { font-size: 30px; max-width: none; }
+      .panel-form { padding: 20px; }
     }
   </style>
 </head>
 
 <body>
-  <main class="wrap">
-    <!-- LEFT -->
-    <section class="brand">
+  <main class="page">
+    <section class="panel-hero">
       <div class="logo">
-        <div class="logoBox">S</div>
-        Saporsi Core
+        <span class="logo-badge">S</span>
+        <span>Saporsi Core</span>
       </div>
-
-      <div class="hero">
-        <h1>Welcome back 👋</h1>
-        <p>
-          Login ke sistem operasional Saporsi untuk mengelola vending,
-          transaksi, dan laporan merchant secara rapi & transparan.
-        </p>
-      </div>
-
-      <div class="points">
-        <div class="point">
-          <b>💳 Pembayaran Aman</b>
-          <small>Setiap transaksi tercatat dan bisa diaudit.</small>
-        </div>
-        <div class="point">
-          <b>📦 Operasional Jelas</b>
-          <small>Barang keluar sesuai pembayaran, tanpa ribet.</small>
-        </div>
-        <div class="point">
-          <b>🤝 Siap untuk Klien</b>
-          <small>Tampilan profesional yang bikin merchant percaya.</small>
-        </div>
+      <h1>Cozy workspace for smarter vending ops.</h1>
+      <p>
+        Pantau transaksi, performa machine, dan operasional merchant dalam satu
+        dashboard yang clean, nyaman, dan cepat dipakai setiap hari.
+      </p>
+      <div class="benefits">
+        <div class="benefit">Owner-ready dashboard and performance KPIs</div>
+        <div class="benefit">Secure payment records and audit trail</div>
+        <div class="benefit">Fast daily workflow for admin and merchant</div>
       </div>
     </section>
 
-    <!-- RIGHT -->
-    <section class="card">
+    <section class="panel-form">
       <h2>Sign in</h2>
       <div class="sub">Gunakan akun yang sudah terdaftar</div>
 
@@ -298,10 +212,7 @@
           />
         </div>
 
-        <div class="row">
-          <span>Tekan Enter untuk login</span>
-          <a class="link" href="javascript:void(0)">Lupa password?</a>
-        </div>
+        <div class="hint">Tekan Enter untuk login</div>
 
         <button class="btn" type="submit">Login</button>
 

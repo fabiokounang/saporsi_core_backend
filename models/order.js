@@ -479,6 +479,26 @@ exports.updatePaymentWebhookStatus = async ({
   return result;
 };
 
+exports.getAdminDashboardSummary = async ({ dateFrom, dateTo }) => {
+  const params = [dateFrom, dateTo];
+  const sql = `
+    SELECT
+      COALESCE(SUM(CASE WHEN o.status = 'paid' THEN o.total ELSE 0 END), 0) AS turnover,
+      COALESCE(SUM(CASE WHEN o.status = 'paid' THEN (o.total - o.subtotal) ELSE 0 END), 0) AS profit,
+      COALESCE(SUM(CASE WHEN o.status = 'paid' THEN 1 ELSE 0 END), 0) AS transactions
+    FROM orders o
+    WHERE o.created_at >= ?
+      AND o.created_at < DATE_ADD(?, INTERVAL 1 DAY)
+  `;
+
+  const [rows] = await pool.query(sql, params);
+  return {
+    turnover: Number(rows[0]?.turnover || 0),
+    profit: Number(rows[0]?.profit || 0),
+    transactions: Number(rows[0]?.transactions || 0),
+  };
+};
+
 exports.findByPaymentRefOrOrderCodeForUpdate = async (ref, conn) => {
   const executor = conn || pool;
 

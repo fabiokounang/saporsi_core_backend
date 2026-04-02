@@ -5,41 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><%= title %></title>
   <style>
-    :root{--bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    .top{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:18px 22px;font-weight:900}
-    .wrap{max-width:1100px;margin:0 auto;padding:22px}
-    .hero{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-    .hero h1{margin:0;font-size:22px}
-    .muted{color:var(--muted);font-size:13px}
-    .logout{display:inline-flex;text-decoration:none;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;color:#7c2d12;font-weight:900}
-    .grid{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:.15s}
-    .card:hover{transform:translateY(-2px);background:#fffaf4}
-    .card h3{margin:0 0 6px;font-size:16px}
-    .card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+    .dash-head { display:flex; justify-content:space-between; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:14px; }
+    .dash-head h2 { margin:0; font-size:24px; }
+    .muted { color:#7a6f67; font-size:13px; }
+    .filter { display:flex; gap:8px; align-items:end; flex-wrap:wrap; }
+    .field { display:grid; gap:5px; }
+    .field label { font-size:12px; color:#7a6f67; }
+    .field input { min-width:160px; padding:9px 10px; border-radius:10px; border:1px solid #eadfd2; }
+    .btn { border:0; border-radius:10px; padding:10px 12px; color:#fff; font-weight:700; cursor:pointer; background:linear-gradient(135deg,#8b5cf6,#ec4899); }
+    .stats { display:grid; grid-template-columns:repeat(3, minmax(180px, 1fr)); gap:10px; margin-bottom:14px; }
+    .stats-owner { display:grid; grid-template-columns:repeat(6, minmax(150px, 1fr)); gap:10px; margin-bottom:14px; }
+    .stat { border:1px solid #eadfd2; border-radius:14px; background:#fffaf4; padding:14px; }
+    .stat b { display:block; font-size:12px; color:#7a6f67; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+    .stat h3 { margin:0; font-size:28px; line-height:1.2; color:#2b2420; }
+    @media (max-width: 1100px) { .stats-owner{grid-template-columns:repeat(3, minmax(140px, 1fr));} }
+    @media (max-width: 900px) { .stats, .stats-owner{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
-  <div class="top">Saporsi Core • Admin Console</div>
-  <div class="wrap">
-    <section class="hero">
-      <div>
-        <h1>Welcome back, <%= user.role %></h1>
-        <div class="muted">Pilih modul untuk mengelola operasional vending.</div>
+  <section class="dash-head">
+    <div>
+      <h2>Dashboard Overview</h2>
+      <div class="muted">Welcome back, <%= user.role %>. Ringkasan performa berdasarkan rentang tanggal.</div>
+    </div>
+    <form method="GET" action="/admin" class="filter">
+      <div class="field">
+        <label>Dari tanggal</label>
+        <input type="date" name="date_from" value="<%= dateFrom %>" />
       </div>
-      <a class="logout" href="/auth/logout">Logout</a>
-    </section>
+      <div class="field">
+        <label>Sampai tanggal</label>
+        <input type="date" name="date_to" value="<%= dateTo %>" />
+      </div>
+      <button class="btn" type="submit">Apply</button>
+    </form>
+  </section>
 
-    <section class="grid">
-      <a class="card" href="/admin/merchants"><h3>Merchants</h3><p>Kelola partner merchant dan status aktif.</p></a>
-      <a class="card" href="/admin/locations"><h3>Locations</h3><p>Kelola titik lokasi tempat machine ditempatkan.</p></a>
-      <a class="card" href="/admin/machines"><h3>Machines</h3><p>Kelola data machine dan assignment lokasinya.</p></a>
-      <a class="card" href="/admin/products"><h3>Products</h3><p>Kelola master produk dan harga default.</p></a>
-      <a class="card" href="/admin/slots"><h3>Slots</h3><p>Atur produk, harga final, dan stok per slot.</p></a>
-      <a class="card" href="/admin/orders"><h3>Orders</h3><p>Pantau status pembayaran dan detail transaksi.</p></a>
-    </section>
-  </div>
+  <section class="stats">
+    <article class="stat">
+      <b>Turnover</b>
+      <h3>Rp <%= summary.turnoverFmt %></h3>
+    </article>
+    <article class="stat">
+      <b>Profit</b>
+      <h3>Rp <%= summary.profitFmt %></h3>
+    </article>
+    <article class="stat">
+      <b>Transactions</b>
+      <h3><%= summary.transactions %></h3>
+    </article>
+  </section>
+
+  <section class="stats-owner">
+    <article class="stat">
+      <b>Merchants</b>
+      <h3><%= ownerStats.merchants %></h3>
+    </article>
+    <article class="stat">
+      <b>Locations</b>
+      <h3><%= ownerStats.locations %></h3>
+    </article>
+    <article class="stat">
+      <b>Machines</b>
+      <h3><%= ownerStats.machines %></h3>
+    </article>
+    <article class="stat">
+      <b>Products</b>
+      <h3><%= ownerStats.products %></h3>
+    </article>
+    <article class="stat">
+      <b>Slots Total</b>
+      <h3><%= ownerStats.slotsTotal %></h3>
+    </article>
+    <article class="stat">
+      <b>Slots Active</b>
+      <h3><%= ownerStats.slotsActive %></h3>
+    </article>
+  </section>
+
 </body>
 </html>

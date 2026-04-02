@@ -1,6 +1,27 @@
 // models/machineSlot.js
 const { pool } = require("../utils/db");
 
+exports.countAll = async () => {
+  const sql = `
+    SELECT
+      COUNT(1) AS total
+    FROM machine_slots
+  `;
+  const [rows] = await pool.query(sql);
+  return Number(rows[0]?.total || 0);
+};
+
+exports.countActive = async () => {
+  const sql = `
+    SELECT
+      COUNT(1) AS total
+    FROM machine_slots
+    WHERE is_active = 1
+  `;
+  const [rows] = await pool.query(sql);
+  return Number(rows[0]?.total || 0);
+};
+
 exports.countByMachine = async (machine_id) => {
   const sql = `
     SELECT
