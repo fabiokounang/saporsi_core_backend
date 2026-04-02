@@ -1,5 +1,23 @@
 // utils/db.js
 const mysql = require("mysql2/promise");
+(async () => {
+  try {
+    const conn = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
+
+    await conn.query('SELECT 1');
+    console.log('✅ DB CONNECT OK');
+    await conn.end();
+  } catch (err) {
+    console.error('❌ DB CONNECT FAIL');
+    console.error(err);
+  }
+})();
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
