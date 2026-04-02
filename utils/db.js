@@ -1,20 +1,20 @@
 // utils/db.js
 const mysql = require("mysql2/promise");
-console.log('====================', {
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
-    })
+// console.log('====================', {
+//       host: process.env.DB_HOST,
+//       port: Number(process.env.DB_PORT),
+//       user: process.env.DB_USER,
+//       password: process.env.DB_PASSWORD,
+//       database: process.env.DB_NAME
+//     })
 (async () => {
   try {
     const conn = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      host: "mysql.railway.internal",
+      port: 3306,
+      user: "root",
+      password: "xxwgsPEowuNCmYoOWXvRbosNbyUjvhKJ",
+      database: "saporsi_core"
     });
 
     await conn.query('SELECT 1');
@@ -27,11 +27,11 @@ console.log('====================', {
 })();
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: "mysql.railway.internal",
+  port: 3306,
+  user: "root",
+  password: "xxwgsPEowuNCmYoOWXvRbosNbyUjvhKJ",
+  database: "saporsi_core"
   waitForConnections: true,
   connectionLimit: Number(process.env.DB_POOL_LIMIT || 10),
   queueLimit: 0,
