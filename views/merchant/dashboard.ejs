@@ -4,116 +4,44 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><%= title %></title>
-
   <style>
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:#fff8f1;
-      color:#111827;
-    }
-    header{
-      background:#ff8a00;
-      color:#fff;
-      padding:18px 24px;
-      font-size:18px;
-      font-weight:800;
-    }
-    .container{
-      padding:24px;
-      max-width:1100px;
-      margin:auto;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-      gap:18px;
-    }
-    .card{
-      background:#fff;
-      border-radius:16px;
-      padding:18px;
-      border:1px solid #e5e7eb;
-      box-shadow:0 10px 25px rgba(0,0,0,.06);
-    }
-    .card h3{
-      margin:0 0 6px;
-      font-size:16px;
-    }
-    .card p{
-      margin:0;
-      color:#6b7280;
-      font-size:13px;
-    }
-    a.card{
-      text-decoration:none;
-      color:inherit;
-      transition:.15s;
-    }
-    a.card:hover{
-      transform:translateY(-2px);
-      box-shadow:0 14px 30px rgba(0,0,0,.08);
-    }
-    footer{
-      margin-top:32px;
-      font-size:13px;
-      color:#6b7280;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .logout{
-      color:#e36f00;
-      text-decoration:none;
-      font-weight:700;
-    }
+    :root{--bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .top{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:18px 22px;font-weight:900}
+    .wrap{max-width:980px;margin:0 auto;padding:22px}
+    .hero{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .hero h1{margin:0;font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+    .logout{display:inline-flex;text-decoration:none;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;color:#7c2d12;font-weight:900}
+    .grid{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:.15s}
+    .card:hover{transform:translateY(-2px);background:#fffaf4}
+    .card h3{margin:0 0 6px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
   </style>
 </head>
-
 <body>
-  <header>
-    Saporsi Admin Dashboard
-  </header>
-
-  <div class="container">
-    <p>Welcome back, <b><%= user.role %></b> 👋</p>
-
-    <div class="grid">
-      <a class="card" href="/admin/merchants">
-        <h3>Merchants</h3>
-        <p>Kelola partner & status merchant</p>
-      </a>
-
-      <a class="card" href="/admin/locations">
-        <h3>Locations</h3>
-        <p>Tempat mesin ditempatkan</p>
-      </a>
-
-      <a class="card" href="/admin/machines">
-        <h3>Machines</h3>
-        <p>Daftar vending machine</p>
-      </a>
-
-      <a class="card" href="/admin/products">
-        <h3>Products</h3>
-        <p>Produk yang dijual</p>
-      </a>
-
-      <a class="card" href="/admin/orders">
-        <h3>Orders</h3>
-        <p>Transaksi & status pembayaran</p>
-      </a>
-
-      <a class="card" href="/admin/audit-logs">
-        <h3>Audit Logs</h3>
-        <p>Jejak semua aktivitas</p>
-      </a>
-    </div>
-
-    <footer>
-      <span>Saporsi Core • Admin</span>
+  <div class="top">Saporsi Core • Merchant Console</div>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <h1>Welcome back, <%= user.role %></h1>
+        <div class="muted">Kelola transaksi merchant dengan workflow yang sederhana.</div>
+      </div>
       <a class="logout" href="/auth/logout">Logout</a>
-    </footer>
+    </section>
+
+    <section class="grid">
+      <a class="card" href="/orders">
+        <h3>Orders</h3>
+        <p>Lihat riwayat order dan status pembayaran terbaru.</p>
+      </a>
+      <a class="card" href="/orders/temp">
+        <h3>Generate QRIS</h3>
+        <p>Buat order dan generate QRIS pembayaran dari machine slot.</p>
+      </a>
+    </section>
   </div>
 </body>
 </html>

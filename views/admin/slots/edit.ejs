@@ -85,8 +85,8 @@
           </div>
 
           <div>
-            <label for="price">Price Override (optional)</label>
-            <input id="price" name="price" value="<%= value?.price || '' %>" placeholder="kosongkan untuk pakai harga product" />
+            <label for="slot_price">Price Override (optional)</label>
+            <input id="slot_price" name="slot_price" value="<%= value?.slot_price || '' %>" placeholder="kosongkan untuk pakai harga product" />
           </div>
 
           <div>
@@ -105,7 +105,7 @@
 
         <div class="row">
           <button class="btn btn-primary" type="submit">Save Changes</button>
-          <a class="btn btn-secondary" href="/admin/slots?machine_id=<%= encodeURIComponent(value?.machine_id || '') %>">Back</a>
+          <a class="btn btn-secondary" href="/admin/slots/list?machine_id=<%= encodeURIComponent(value?.machine_id || '') %>">Back</a>
           <a class="btn btn-secondary" href="/admin">Dashboard</a>
         </div>
       </form>
