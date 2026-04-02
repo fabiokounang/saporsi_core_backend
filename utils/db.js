@@ -31,7 +31,7 @@ const pool = mysql.createPool({
   port: 3306,
   user: "root",
   password: "xxwgsPEowuNCmYoOWXvRbosNbyUjvhKJ",
-  database: "saporsi_core"
+  database: "saporsi_core",
   waitForConnections: true,
   connectionLimit: Number(process.env.DB_POOL_LIMIT || 10),
   queueLimit: 0,
