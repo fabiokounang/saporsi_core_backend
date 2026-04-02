@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{--bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:1200px;margin:0 auto;padding:22px;}
+    h1{margin:0 0 8px;font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .toolbar{padding:14px 16px;border-bottom:1px solid #f1f5f9;background:#fff;}
+    form{margin:0;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+    label{display:block;font-size:12px;font-weight:900;color:#7c2d12;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+    select{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;font-size:13px;color:#374151;outline:none;min-width:180px;}
+    select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid transparent;cursor:pointer;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
+    .btn-ghost{background:#fff;border:1px solid var(--border);color:#7c2d12}
+    .btn-ghost:hover{background:#fff7ed}
+    table{width:100%;border-collapse:collapse}
+    thead th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#7c2d12;background:#fff2e5;border-bottom:1px solid #f1caa2;padding:12px 14px;}
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:middle;}
+    tbody tr:nth-child(2n){background:#fffdf9}
+    tbody tr:hover{background:#fff4e6}
+    .mono{font-variant-numeric:tabular-nums}
+    .pager{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:14px 16px;}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Merchant • Orders</div>
+  <div class="wrap">
+    <h1>Orders</h1>
+    <div class="muted">Total: <b><%= total %></b></div>
+
+    <div style="height:12px;"></div>
+
+    <div class="card">
+      <div class="toolbar">
+        <form method="GET" action="/merchant/orders">
+          <div>
+            <label>Status</label>
+            <select name="status">
+              <option value="" <%= filters.status ? "" : "selected" %>>All</option>
+              <% ["PENDING","PAID","DISPENSING","DISPENSED","FAILED","EXPIRED","CANCELLED","REFUNDED"].forEach(function(s){ %>
+                <option value="<%= s %>" <%= filters.status === s ? "selected" : "" %>><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div>
+            <label>Limit</label>
+            <select name="limit">
+              <% [10,20,30,50].forEach(function(n){ %>
+                <option value="<%= n %>" <%= String(limit) === String(n) ? "selected" : "" %>><%= n %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" type="submit">Filter</button>
+          <a class="btn btn-ghost" href="/merchant/orders">Reset</a>
+        </form>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Machine</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Created</th>
+            <th>Paid</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (rows || []).forEach(function(r){ %>
+            <tr>
+              <td class="mono"><b><%= r.order_code %></b><div class="muted">#<%= r.id %></div></td>
+              <td><b><%= r.machine_code %></b><div class="muted"><%= r.machine_name || "-" %></div></td>
+              <td class="mono"><b><%= r.status %></b></td>
+              <td class="mono">Rp <b><%= r.total_fmt %></b></td>
+              <td class="mono"><%= r.created_at_fmt %></td>
+              <td class="mono"><%= r.paid_at_fmt %></td>
+            </tr>
+          <% }) %>
+          <% if (!rows || rows.length === 0) { %>
+            <tr><td colspan="6" class="muted" style="padding:16px;">Tidak ada data.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+
+      <div class="pager">
+        <div class="muted">Page <b><%= page %></b> / <b><%= totalPages %></b></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <%
+            const prevPage = Math.max(1, page - 1);
+            const nextPage = Math.min(totalPages, page + 1);
+            const qsBase = `status=${encodeURIComponent(filters.status||"")}&limit=${encodeURIComponent(limit)}`;
+          %>
+          <a class="btn btn-ghost" href="/merchant/orders?<%= qsBase %>&page=<%= prevPage %>">Prev</a>
+          <a class="btn btn-ghost" href="/merchant/orders?<%= qsBase %>&page=<%= nextPage %>">Next</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

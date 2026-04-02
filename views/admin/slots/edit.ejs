@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{
+      --bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;
+      --orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;
+      --danger-bg:#fef2f2;--danger-border:#fecaca;--danger-text:#991b1b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:860px;margin:0 auto;padding:22px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+    h1{margin:0 0 10px;font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+    label{display:block;margin:14px 0 6px;font-weight:900;font-size:13px;color:#374151}
+    input,select{
+      width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;
+      font-size:14px;outline:none;background:#fff;
+    }
+    input:focus,select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid transparent;cursor:pointer;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
+    .btn-secondary{background:#fff;border:1px solid var(--border);color:#7c2d12}
+    .btn-secondary:hover{background:#fff7ed}
+    .alert{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px 12px;border-radius:12px;margin-bottom:12px;font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width:860px){.grid{grid-template-columns:1fr}}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:#374151;font-weight:900;font-size:12px;}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Admin • Edit Slot</div>
+
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <h1>Edit Slot</h1>
+        <div class="muted">Ubah product/price/stock per slot.</div>
+      </div>
+      <div class="pill">Slot ID: <%= slot.id %></div>
+    </div>
+
+    <div style="height:14px;"></div>
+
+    <div class="card">
+      <% if (error) { %>
+        <div class="alert"><b>Gagal:</b> <%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/admin/slots/<%= slot.id %>">
+        <div class="grid">
+          <div>
+            <label for="machine_id">Machine</label>
+            <select id="machine_id" name="machine_id" required>
+              <option value="">-- pilih machine --</option>
+              <% (machines || []).forEach(function(m){ %>
+                <option value="<%= m.id %>" <%= String(value?.machine_id||'')===String(m.id) ? 'selected':'' %>>
+                  <%= m.code %><%= m.name ? ' • ' + m.name : '' %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div>
+            <label for="slot_code">Slot Code</label>
+            <input id="slot_code" name="slot_code" value="<%= value?.slot_code || '' %>" required />
+          </div>
+
+          <div>
+            <label for="product_id">Product</label>
+            <select id="product_id" name="product_id" required>
+              <option value="">-- pilih product --</option>
+              <% (products || []).forEach(function(p){ %>
+                <option value="<%= p.id %>" <%= String(value?.product_id||'')===String(p.id) ? 'selected':'' %>>
+                  <%= p.name %> • <%= p.sku %> • Rp <%= new Intl.NumberFormat("id-ID").format(p.price||0) %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div>
+            <label for="price">Price Override (optional)</label>
+            <input id="price" name="price" value="<%= value?.price || '' %>" placeholder="kosongkan untuk pakai harga product" />
+          </div>
+
+          <div>
+            <label for="stock">Stock</label>
+            <input id="stock" name="stock" value="<%= value?.stock || '0' %>" />
+          </div>
+
+          <div>
+            <label for="is_active">Status</label>
+            <select id="is_active" name="is_active">
+              <option value="1" <%= (value?.is_active ?? 1) ? 'selected' : '' %>>Active</option>
+              <option value="0" <%= (value?.is_active ?? 1) ? '' : 'selected' %>>Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn btn-primary" type="submit">Save Changes</button>
+          <a class="btn btn-secondary" href="/admin/slots?machine_id=<%= encodeURIComponent(value?.machine_id || '') %>">Back</a>
+          <a class="btn btn-secondary" href="/admin">Dashboard</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

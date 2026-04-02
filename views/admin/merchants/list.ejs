@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+
+  <style>
+    :root{
+      --bg:#fff8f1;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --orange:#ff8a00;
+      --orange2:#ffb866;
+      --shadow:0 18px 45px rgba(0,0,0,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: #fff6ec;
+      color:var(--text);
+    }
+    .topbar{
+      background:linear-gradient(135deg,var(--orange),var(--orange2));
+      color:#fff;
+      padding:16px 22px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:22px;}
+    .header{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+      margin-bottom:14px;
+    }
+    h1{margin:0;font-size:22px}
+    .sub{margin-top:6px;color:rgba(255,255,255,.9);font-weight:600;font-size:13px}
+    .meta{
+      color:var(--muted);
+      font-size:13px;
+      margin:10px 0 0;
+    }
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    a{color:inherit;text-decoration:none}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 12px;border-radius:12px;font-weight:800;font-size:13px;
+      border:1px solid transparent;cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--orange),var(--orange2));
+      color:#fff;
+      box-shadow:0 14px 28px rgba(255,138,0,.28);
+    }
+    .btn-primary:hover{transform:translateY(-1px);opacity:.98}
+    .btn-ghost{
+      background:rgba(255,255,255,.75);
+      border-color:rgba(255,255,255,.6);
+      color:#7c2d12;
+    }
+    .btn-ghost:hover{background:#fff}
+    .btn-link{
+      background:transparent;
+      border-color:transparent;
+      color:#7c2d12;
+      padding:10px 6px;
+      font-weight:900;
+    }
+    .btn-link:hover{text-decoration:underline}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .toolbar{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 16px;border-bottom:1px solid #f1f5f9;
+      background:linear-gradient(180deg,#fff, #fffaf4);
+    }
+    .toolbar .left{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      color:var(--muted);font-size:13px;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:#374151;
+      font-weight:800;
+      font-size:12px;
+    }
+    .pill small{color:var(--muted);font-weight:700}
+
+    table{width:100%;border-collapse:collapse}
+    thead th{
+      position:sticky;top:0;z-index:1;
+      text-align:left;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#7c2d12;
+      background:#fff2e5;
+      border-bottom:1px solid #f1caa2;
+      padding:12px 14px;
+    }
+    tbody td{
+      padding:12px 14px;
+      border-bottom:1px solid #f1f5f9;
+      font-size:14px;
+      vertical-align:middle;
+    }
+    tbody tr:nth-child(2n){background:#fffdf9}
+    tbody tr:hover{background:#fff4e6}
+    .mono{font-variant-numeric:tabular-nums}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 10px;border-radius:999px;
+      font-size:12px;font-weight:900;border:1px solid var(--border);
+    }
+    .dot{width:8px;height:8px;border-radius:999px}
+    .on{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}
+    .on .dot{background:#10b981}
+    .off{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .off .dot{background:#ef4444}
+
+    .empty{
+      padding:26px 16px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .footer{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 16px;
+      background:linear-gradient(180deg,#fffaf4,#fff);
+    }
+    .pager{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+    .select{
+      padding:9px 10px;border-radius:12px;border:1px solid var(--border);
+      background:#fff;font-weight:800;font-size:13px;color:#374151;
+      outline:none;
+    }
+    .select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
+    .muted{color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    Saporsi Admin • Merchants
+    <div class="sub">Kelola partner merchant (buat, edit, aktif/nonaktif)</div>
+  </div>
+
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>Merchants</h1>
+        <div class="meta">Total: <b><%= total %></b> • Page <b><%= page %></b> / <b><%= totalPages %></b></div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="/admin/merchants/new">+ New Merchant</a>
+        <a class="btn btn-ghost" href="/admin">Dashboard</a>
+        <a class="btn btn-link" href="/auth/logout">Logout</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="left">
+          <span class="pill">Showing <small><%= rows ? rows.length : 0 %></small> items</span>
+          <span class="pill">Limit <small><%= limit %></small></span>
+        </div>
+        <div class="right muted">Tip: klik “Edit” untuk ubah nama/status</div>
+      </div>
+
+      <% if (!rows || rows.length === 0) { %>
+        <div class="empty">Belum ada merchant. Klik <b>New Merchant</b> untuk menambahkan.</div>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">ID</th>
+              <th>Name</th>
+              <th style="width:150px;">Status</th>
+              <th style="width:230px;">Updated</th>
+              <th style="width:110px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach(function(m){ %>
+              <tr>
+                <td class="mono"><%= m.id %></td>
+                <td><b><%= m.name %></b></td>
+                <td>
+                  <% if (m.is_active) { %>
+                    <span class="badge on"><span class="dot"></span> Active</span>
+                  <% } else { %>
+                    <span class="badge off"><span class="dot"></span> Inactive</span>
+                  <% } %>
+                </td>
+                <td class="mono"><%= m.updated_at %></td>
+                <td><a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/merchants/<%= m.id %>/edit">Edit</a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+
+      <div class="footer">
+        <div class="muted">
+          <% const start = (page - 1) * limit + 1; %>
+          <% const end = (page - 1) * limit + (rows ? rows.length : 0); %>
+          <% if (rows && rows.length) { %>
+            Showing <b><%= start %></b>–<b><%= end %></b> of <b><%= total %></b>
+          <% } else { %>
+            Showing 0 of <b><%= total %></b>
+          <% } %>
+        </div>
+
+        <div class="pager">
+          <label class="muted">Limit</label>
+          <select class="select" onchange="location.href='/admin/merchants?page=1&limit=' + this.value;">
+            <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
+            <option value="20" <%= limit === 20 ? 'selected' : '' %>>20</option>
+            <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
+          </select>
+
+          <% const prev = page > 1 ? page - 1 : 1; %>
+          <% const next = page < totalPages ? page + 1 : totalPages; %>
+
+          <% if (page > 1) { %>
+            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= prev %>&limit=<%= limit %>">Prev</a>
+          <% } %>
+
+          <% if (page < totalPages) { %>
+            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= next %>&limit=<%= limit %>">Next</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{--bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:1100px;margin:0 auto;padding:22px;}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .head{padding:16px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    h1{margin:0;font-size:20px}
+    .muted{color:var(--muted);font-size:13px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid var(--border);cursor:pointer;text-decoration:none;background:#fff;color:#7c2d12}
+    .btn:hover{background:#fff7ed}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .box{border:1px solid #f1f5f9;border-radius:14px;padding:12px;background:#fffdf9}
+    .k{font-size:12px;color:#7c2d12;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .v{font-size:14px;font-weight:800}
+    table{width:100%;border-collapse:collapse}
+    thead th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#7c2d12;background:#fff2e5;border-bottom:1px solid #f1caa2;padding:12px 14px;}
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:middle;}
+    tbody tr:nth-child(2n){background:#fffdf9}
+    .mono{font-variant-numeric:tabular-nums}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Admin • Order Detail</div>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div>
+          <h1><%= order.order_code %></h1>
+          <div class="muted">Order ID: <b>#<%= order.id %></b> • Status: <b><%= order.status %></b></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn" href="/admin/orders">Back</a>
+          <a class="btn" href="/admin">Dashboard</a>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="box">
+          <div class="k">Merchant</div>
+          <div class="v"><%= order.merchant_name %> <span class="muted mono">(#<%= order.merchant_id %>)</span></div>
+        </div>
+        <div class="box">
+          <div class="k">Machine</div>
+          <div class="v"><%= order.machine_code %> <span class="muted"><%= order.machine_name || "" %></span></div>
+        </div>
+        <div class="box">
+          <div class="k">Payment</div>
+          <div class="v"><%= order.payment_provider || "-" %> <span class="muted mono"><%= order.payment_ref || "" %></span></div>
+        </div>
+
+        <div class="box">
+          <div class="k">Created</div>
+          <div class="v mono"><%= order.created_at_fmt %></div>
+        </div>
+        <div class="box">
+          <div class="k">Paid</div>
+          <div class="v mono"><%= order.paid_at_fmt %></div>
+        </div>
+        <div class="box">
+          <div class="k">Expires</div>
+          <div class="v mono"><%= order.expires_at_fmt %></div>
+        </div>
+
+        <div class="box">
+          <div class="k">Subtotal</div>
+          <div class="v mono">Rp <%= order.subtotal_fmt %></div>
+        </div>
+        <div class="box">
+          <div class="k">Total</div>
+          <div class="v mono">Rp <%= order.total_fmt %></div>
+        </div>
+        <div class="box">
+          <div class="k">Currency</div>
+          <div class="v"><%= order.currency %></div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px 16px;">
+        <div class="muted" style="margin-bottom:10px;">Items</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit</th>
+              <th>Total</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (items || []).forEach(function(it){ %>
+              <tr>
+                <td class="mono"><b><%= it.slot_code %></b></td>
+                <td>
+                  <b><%= it.product_name %></b>
+                  <div class="muted mono"><%= it.product_sku %> • product_id: <%= it.product_id %></div>
+                </td>
+                <td class="mono"><%= it.qty %></td>
+                <td class="mono">Rp <%= it.unit_price_fmt %></td>
+                <td class="mono">Rp <b><%= it.line_total_fmt %></b></td>
+                <td class="mono"><%= it.created_at_fmt %></td>
+              </tr>
+            <% }) %>
+            <% if (!items || items.length === 0) { %>
+              <tr><td colspan="6" class="muted" style="padding:16px;">Tidak ada item.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

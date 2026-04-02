@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{--bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:1200px;margin:0 auto;padding:22px;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+    h1{margin:0;font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    a{color:inherit;text-decoration:none}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid transparent;transition:.15s ease;}
+    .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
+    .btn-ghost{background:#fff;border-color:var(--border);color:#7c2d12}
+    .btn-ghost:hover{background:#fff7ed}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #f1f5f9;background:#fff;flex-wrap:wrap;}
+    select{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900;font-size:13px;color:#374151;outline:none;}
+    select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
+    table{width:100%;border-collapse:collapse}
+    thead th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#7c2d12;background:#fff2e5;border-bottom:1px solid #f1caa2;padding:12px 14px;}
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:middle;}
+    tbody tr:nth-child(2n){background:#fffdf9}
+    tbody tr:hover{background:#fff4e6}
+    .mono{font-variant-numeric:tabular-nums}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--border);}
+    .dot{width:8px;height:8px;border-radius:999px}
+    .on{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}.on .dot{background:#10b981}
+    .off{background:#fef2f2;color:#991b1b;border-color:#fecaca}.off .dot{background:#ef4444}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Admin • Slots</div>
+
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>Machine Slots</h1>
+        <div class="muted">Machine: <b><%= machine_id %></b> • Total slot: <b><%= total %></b></div>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="/admin/slots/new?machine_id=<%= machine_id %>">+ New Slot</a>
+        <a class="btn btn-ghost" href="/admin/slots">Change Machine</a>
+        <a class="btn btn-ghost" href="/admin">Dashboard</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="muted">Slot price kosong = pakai harga product (default)</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <form method="GET" action="/admin/slots/list" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0;">
+            <span class="muted">Switch Machine</span>
+            <select name="machine_id" style="padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900;font-size:13px;color:#374151;outline:none;">
+              <% (machines || []).forEach(function(m){ %>
+                <option value="<%= m.id %>" <%= String(m.id) === String(machine_id) ? 'selected' : '' %>>
+                  <%= m.code %><%= m.name ? (' • ' + m.name) : '' %>
+                </option>
+              <% }) %>
+            </select>
+            <button class="btn btn-ghost" type="submit">Switch</button>
+          </form>
+
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:110px;">Slot</th>
+            <th>Product</th>
+            <th style="width:200px;">Price</th>
+            <th style="width:120px;">Stock</th>
+            <th style="width:150px;">Status</th>
+            <th style="width:110px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (rows || []).forEach(function(s){ %>
+            <tr>
+              <td class="mono"><b><%= s.slot_code %></b></td>
+              <td>
+                <b><%= s.product_name %></b>
+                <div class="muted mono" style="margin-top:4px;"><%= s.product_sku %> • Updated: <%= s.updated_at_fmt %></div>
+              </td>
+              <td class="mono">
+                Rp <b><%= s.final_price_fmt %></b>
+                <div class="muted" style="margin-top:4px;">slot: <%= s.slot_price_fmt %> • product: <%= s.product_price_fmt %></div>
+              </td>
+              <td class="mono">
+                <b><%= s.stock %></b><% if (s.capacity !== null) { %><span class="muted"> / <%= s.capacity %></span><% } %>
+              </td>
+              <td>
+                <% if (s.is_active) { %>
+                  <span class="badge on"><span class="dot"></span> Active</span>
+                <% } else { %>
+                  <span class="badge off"><span class="dot"></span> Inactive</span>
+                <% } %>
+              </td>
+              <td><a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/slots/<%= s.id %>/edit">Edit</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
