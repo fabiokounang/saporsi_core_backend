@@ -75,7 +75,6 @@ function wrapHtmlWithShell(html, req) {
   <div class="auth-layout auth-layout-full">
     <section class="auth-panel auth-panel-full">
       ${bodyInner}
-      <div class="shell-footnote">Saporsi Core &copy; ${year}</div>
     </section>
   </div>
 </body>`
