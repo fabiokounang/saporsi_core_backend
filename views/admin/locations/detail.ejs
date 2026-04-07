@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{
+      --bg:#fff8f1;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;
+      --orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#fff6ec;color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:1100px;margin:0 auto;padding:22px;}
+    h1{margin:0;font-size:22px}
+    .meta{color:var(--muted);font-size:13px;margin-top:8px}
+    a{color:inherit;text-decoration:none}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 12px;border-radius:12px;font-weight:900;font-size:13px;
+      border:1px solid transparent;cursor:pointer;transition:.15s ease;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--orange),var(--orange2));
+      color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28);
+    }
+    .btn-ghost{
+      background:rgba(255,255,255,.75);
+      border-color:rgba(255,255,255,.6);
+      color:#7c2d12;
+    }
+    .btn-ghost:hover{background:#fff}
+    .btn-link{background:transparent;border-color:transparent;color:#7c2d12;padding:10px 6px}
+    .btn-link:hover{text-decoration:underline}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+    .card-pad{padding:18px 20px;}
+    .banner-warn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:14px;}
+    .loc-banner{margin-bottom:14px;padding:12px 14px;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;}
+    .toolbar{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 16px;border-bottom:1px solid #f1f5f9;
+      background:linear-gradient(180deg,#fff, #fffaf4);
+    }
+    .muted{color:var(--muted);font-size:13px}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--border);
+    }
+    .dot{width:8px;height:8px;border-radius:999px}
+    .on{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}
+    .on .dot{background:#10b981}
+    .off{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .off .dot{background:#ef4444}
+    table{width:100%;border-collapse:collapse}
+    thead th{
+      text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.08em;
+      color:#7c2d12;background:#fff2e5;border-bottom:1px solid #f1caa2;padding:12px 14px;
+    }
+    tbody td{padding:12px 14px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:top;}
+    tbody tr:nth-child(2n){background:#fffdf9}
+    tbody tr:hover{background:#fff4e6}
+    .mono{font-variant-numeric:tabular-nums}
+    .empty{padding:22px 16px;color:var(--muted);text-align:center;}
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:100000;
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(3px);
+    }
+    .modal-overlay.is-open{display:flex;}
+    .modal-box{
+      background:#fff;border-radius:16px;max-width:440px;width:100%;
+      padding:22px 24px;box-shadow:0 24px 50px rgba(0,0,0,.18);
+      border:1px solid var(--border);
+    }
+    .modal-box h2{margin:0 0 10px;font-size:18px;color:#991b1b;}
+    .modal-box p{margin:0 0 8px;font-size:14px;line-height:1.55;color:#374151;}
+    .modal-note{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;}
+    .btn-modal-danger{background:#b91c1c;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
+    .btn-modal-cancel{background:#fff;border:1px solid var(--border);color:#374151;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
+    dl{margin:0;display:grid;grid-template-columns:140px 1fr;gap:8px 16px;font-size:14px;}
+    dt{margin:0;color:var(--muted);font-weight:800;}
+    dd{margin:0;}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Admin • Lokasi master</div>
+
+  <div class="wrap">
+    <% if (typeof queryError !== 'undefined' && queryError) { %>
+      <div class="loc-banner"><b>Perhatian:</b> <%= queryError %></div>
+    <% } %>
+
+    <div class="header">
+      <div>
+        <h1><%= master.name %></h1>
+        <div class="meta">
+          ID <b class="mono"><%= master.id %></b>
+          <% if (isArchived) { %> • <b>Diarsipkan</b><% } %>
+        </div>
+      </div>
+      <div class="actions">
+        <% if (!isArchived) { %>
+          <a class="btn btn-primary" href="/admin/locations/<%= master.id %>/edit">Edit master</a>
+        <% } else { %>
+          <a class="btn btn-primary" href="/admin/locations/<%= master.id %>/edit">Detail / pulihkan</a>
+        <% } %>
+        <a class="btn btn-ghost" href="<%= isArchived ? '/admin/locations?archived=1' : '/admin/locations' %>"><%= isArchived ? 'Kembali ke arsip' : 'Kembali ke daftar master' %></a>
+        <a class="btn btn-ghost" href="/admin">Dashboard</a>
+        <a class="btn btn-link" href="/auth/logout">Logout</a>
+      </div>
+    </div>
+
+    <% if (isArchived) { %>
+      <div class="banner-warn">
+        Lokasi master ini diarsipkan. Sub yang tampil di bawah juga berstatus arsip. Pulihkan master dari halaman edit jika perlu.
+      </div>
+    <% } %>
+
+    <div class="card card-pad">
+      <div class="muted" style="font-weight:800;margin-bottom:12px;color:#7c2d12;">Ringkasan master</div>
+      <dl>
+        <dt>Status</dt>
+        <dd>
+          <% if (master.is_active) { %>
+            <span class="badge on"><span class="dot"></span> Aktif</span>
+          <% } else { %>
+            <span class="badge off"><span class="dot"></span> Nonaktif</span>
+          <% } %>
+        </dd>
+        <dt>Alamat</dt>
+        <dd><%= master.address || '—' %></dd>
+        <dt>Catatan</dt>
+        <dd><%= master.notes || '—' %></dd>
+        <dt>Dibuat</dt>
+        <dd class="mono"><%= master.created_at %></dd>
+        <dt>Diperbarui</dt>
+        <dd class="mono"><%= master.updated_at %></dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div style="font-weight:900;color:#7c2d12;">Sub-lokasi (<%= subs.length %>)</div>
+        <% if (!isArchived) { %>
+          <a class="btn btn-primary" style="padding:8px 12px;" href="/admin/locations/new?parent_id=<%= master.id %>">+ Tambah sub</a>
+        <% } %>
+      </div>
+
+      <% if (!subs.length) { %>
+        <div class="empty">
+          <% if (isArchived) { %>
+            Tidak ada sub di arsip untuk master ini.
+          <% } else { %>
+            Belum ada sub-lokasi. Gunakan tombol <b>+ Tambah sub</b> di bagian sub-lokasi.
+          <% } %>
+        </div>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:72px;">ID</th>
+              <th>Nama</th>
+              <th>Alamat / catatan</th>
+              <th style="width:120px;">Status</th>
+              <th style="width:220px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% subs.forEach(function(s){
+                 const subDelLabel = [master.name || '', s.name || ''].filter(Boolean).join(' › ').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+            %>
+              <tr>
+                <td class="mono"><%= s.id %></td>
+                <td><b><%= s.name %></b><div class="muted mono" style="margin-top:4px;">Updated: <%= s.updated_at %></div></td>
+                <td class="muted"><%= s.address || '—' %><% if (s.notes) { %><div style="margin-top:6px;"><b>Catatan:</b> <%= s.notes %></div><% } %></td>
+                <td>
+                  <% if (s.is_active) { %>
+                    <span class="badge on"><span class="dot"></span> Aktif</span>
+                  <% } else { %>
+                    <span class="badge off"><span class="dot"></span> Nonaktif</span>
+                  <% } %>
+                </td>
+                <td style="white-space:nowrap;">
+                  <a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/locations/<%= s.id %>/edit"><%= isArchived ? 'Detail' : 'Edit' %></a>
+                  <% if (!isArchived) { %>
+                    <form class="js-soft-delete-form" method="POST" action="/admin/locations/<%= s.id %>/soft-delete" style="display:inline;">
+                      <button type="button" class="btn btn-ghost js-open-soft-delete" style="padding:8px 10px;color:#b91c1c;border-color:#fecaca;"
+                        data-delete-label="<%= subDelLabel %>">Hapus</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+
+  <div id="soft-delete-modal" class="modal-overlay" role="presentation" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+      <h2 id="sdm-title">Arsipkan lokasi?</h2>
+      <p>Lokasi berikut akan diarsipkan (soft delete):</p>
+      <p id="sdm-merchant" style="font-weight:800;color:#111827;"></p>
+      <p class="modal-note">Sub tidak lagi muncul di pilihan mesin. Data yang sudah mereferensi ID tetap aman.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" id="sdm-cancel">Batal</button>
+        <button type="button" class="btn-modal-danger" id="sdm-confirm">Ya, arsipkan</button>
+      </div>
+    </div>
+  </div>
+  <script src="/public/js/admin-merchant-soft-delete.js" defer></script>
+</body>
+</html>

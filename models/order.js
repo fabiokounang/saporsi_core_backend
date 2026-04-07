@@ -40,6 +40,7 @@ exports.listAdmin = async ({ status, merchant_id, machine_id, limit, offset }) =
       o.created_at,
 
       m.id AS merchant_id,
+      m.merchant_code AS merchant_code,
       m.name AS merchant_name,
 
       mc.id AS machine_id,
@@ -119,6 +120,7 @@ exports.findByIdAdmin = async (id) => {
       o.created_at,
       o.updated_at,
       m.id AS merchant_id,
+      m.merchant_code AS merchant_code,
       m.name AS merchant_name,
       mc.id AS machine_id,
       mc.code AS machine_code,
@@ -160,11 +162,13 @@ exports.findMerchantActiveById = async (id) => {
   const sql = `
     SELECT
       id,
+      merchant_code,
       name,
       is_active
     FROM merchants
     WHERE id = ?
       AND is_active = 1
+      AND deleted_at IS NULL
     LIMIT ?
   `;
   const [rows] = await pool.query(sql, [id, 1]);
@@ -376,6 +380,7 @@ exports.findDetailById = async (id) => {
       o.created_at,
       o.updated_at,
 
+      m.merchant_code AS merchant_code,
       m.name AS merchant_name,
 
       mc.code AS machine_code,

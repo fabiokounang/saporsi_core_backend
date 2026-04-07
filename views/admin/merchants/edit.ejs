@@ -15,7 +15,7 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
     .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
     .wrap{max-width:760px;margin:0 auto;padding:22px;}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;}
     h1{margin:0 0 10px;font-size:22px}
     .muted{color:var(--muted);font-size:13px}
     label{display:block;margin:14px 0 6px;font-weight:900;font-size:13px;color:#374151}
@@ -23,6 +23,7 @@
       width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;
       font-size:14px;outline:none;background:#fff;
     }
+    input:disabled,select:disabled{opacity:.75;background:#f9fafb;}
     input:focus,select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;align-items:center;}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -30,8 +31,11 @@
     .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
     .btn-secondary{background:#fff;border-color:var(--border);color:#7c2d12}
     .btn-secondary:hover{background:#fff7ed}
+    .btn-danger{background:#fff;border:1px solid #fecaca;color:#b91c1c;}
+    .btn-danger:hover{background:#fef2f2}
     .alert{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger-text);
       padding:12px 12px;border-radius:12px;margin-bottom:12px;font-size:13px}
+    .banner-warn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;padding:12px;border-radius:12px;margin-bottom:12px;font-size:13px;}
     .hint{margin-top:6px;color:var(--muted);font-size:12.5px}
     .idpill{
       display:inline-flex;align-items:center;gap:8px;
@@ -39,23 +43,68 @@
       border:1px solid var(--border);background:#fff;
       color:#374151;font-weight:900;font-size:12px;
     }
+    .mono{font-variant-numeric:tabular-nums}
+
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:100000;
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(3px);
+    }
+    .modal-overlay.is-open{display:flex;}
+    .modal-box{
+      background:#fff;border-radius:16px;max-width:440px;width:100%;
+      padding:22px 24px;box-shadow:0 24px 50px rgba(0,0,0,.18);
+      border:1px solid var(--border);
+    }
+    .modal-box h2{margin:0 0 10px;font-size:18px;color:#991b1b;}
+    .modal-box p{margin:0 0 8px;font-size:14px;line-height:1.55;color:#374151;}
+    .modal-box .modal-note{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;}
+    .modal-actions .btn{cursor:pointer;font:inherit;}
+    .btn-modal-danger{background:#b91c1c;color:#fff;border:0;}
+    .btn-modal-danger:hover{filter:brightness(1.05);}
+    .btn-modal-cancel{background:#fff;border:1px solid var(--border);color:#374151;}
   </style>
 </head>
 
 <body>
-  <div class="topbar">Saporsi Admin • Edit Merchant</div>
+  <div class="topbar">Saporsi Admin • <%= isArchived ? 'Merchant arsip' : 'Edit Merchant' %></div>
 
   <div class="wrap">
     <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
       <div>
-        <h1>Edit Merchant</h1>
-        <div class="muted">Ubah nama & status merchant.</div>
+        <h1><%= isArchived ? 'Merchant (diarsipkan)' : 'Edit Merchant' %></h1>
+        <div class="muted">
+          <%= isArchived ? 'Soft delete — tidak tampil di operasional; order lama tetap terhubung di database.' : 'Ubah nama & status merchant.' %>
+        </div>
       </div>
-      <div class="idpill">Merchant ID: <%= merchant.id %></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div class="idpill">ID: <%= merchant.id %></div>
+        <div class="idpill">Kode: <span class="mono"><%= merchant.merchant_code || "—" %></span></div>
+      </div>
     </div>
 
     <div style="height:14px;"></div>
 
+    <% if (isArchived) { %>
+      <div class="banner-warn">
+        Diarsipkan pada <b class="mono"><%= merchant.deleted_at ? new Date(merchant.deleted_at).toLocaleString('id-ID') : '—' %></b>.
+        Pulihkan untuk mengaktifkan kembali merchant dan user role merchant (login).
+      </div>
+      <div class="card">
+        <form method="POST" action="/admin/merchants/<%= merchant.id %>/restore" onsubmit="return confirm('Pulihkan merchant ini?');">
+          <button class="btn btn-primary" type="submit">Pulihkan merchant</button>
+          <a class="btn btn-secondary" href="/admin/merchants?archived=1">Kembali ke arsip</a>
+          <a class="btn btn-secondary" href="/admin/merchants">Merchant aktif</a>
+        </form>
+      </div>
+      <div class="card">
+        <label>Nama (baca saja)</label>
+        <input value="<%= merchant.name %>" disabled />
+        <label>Status (baca saja)</label>
+        <input value="<%= merchant.is_active ? 'Active' : 'Inactive' %>" disabled />
+      </div>
+    <% } else { %>
     <div class="card">
       <% if (error) { %>
         <div class="alert"><b>Gagal:</b> <%= error %></div>
@@ -64,14 +113,14 @@
       <form method="POST" action="/admin/merchants/<%= merchant.id %>">
         <label for="name">Merchant Name</label>
         <input id="name" name="name" value="<%= value?.name || '' %>" required />
-        <div class="hint">Perubahan nama akan berdampak ke tampilan laporan.</div>
+        <div class="hint">Kode merchant tidak bisa diubah. Perubahan nama berdampak ke tampilan laporan.</div>
 
         <label for="is_active">Status</label>
         <select id="is_active" name="is_active">
           <option value="1" <%= (value?.is_active ?? 1) ? 'selected' : '' %>>Active</option>
           <option value="0" <%= (value?.is_active ?? 1) ? '' : 'selected' %>>Inactive</option>
         </select>
-        <div class="hint">Inactive = merchant tidak bisa digunakan untuk operasi selanjutnya.</div>
+        <div class="hint">Inactive = merchant tidak bisa dipakai untuk transaksi baru. Soft delete lebih kuat (arsip + matikan user merchant).</div>
 
         <div class="row">
           <button class="btn btn-primary" type="submit">Save Changes</button>
@@ -80,6 +129,35 @@
         </div>
       </form>
     </div>
+
+    <div class="card" style="border-color:#fecaca;">
+      <div class="muted" style="margin-bottom:10px;font-weight:800;color:#991b1b;">Zona bahaya</div>
+      <p class="muted" style="margin:0 0 12px;font-size:13px;">
+        Soft delete: merchant hilang dari daftar aktif & filter order; user dengan role <b>merchant</b> untuk merchant ini dinonaktifkan.
+        Data <b>orders</b> tetap ada (relasi <code>orders.merchant_id</code> tidak dihapus).
+      </p>
+      <% const edSdLabel = [merchant.merchant_code || '—', merchant.name || ''].join(' · ').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); %>
+      <form class="js-soft-delete-form" method="POST" action="/admin/merchants/<%= merchant.id %>/soft-delete">
+        <button class="btn btn-danger js-open-soft-delete" type="button" data-merchant="<%= edSdLabel %>">Soft delete merchant</button>
+      </form>
+    </div>
+    <% } %>
   </div>
+
+  <% if (!isArchived) { %>
+  <div id="soft-delete-modal" class="modal-overlay" role="presentation" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+      <h2 id="sdm-title">Soft delete merchant?</h2>
+      <p>Anda akan mengarsipkan merchant berikut dari operasional:</p>
+      <p id="sdm-merchant" style="font-weight:800;color:#111827;"></p>
+      <p class="modal-note">Akun user dengan role merchant untuk merchant ini akan dinonaktifkan. Data order tetap ada di database.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-modal-cancel" id="sdm-cancel">Batal</button>
+        <button type="button" class="btn btn-modal-danger" id="sdm-confirm">Ya, soft delete</button>
+      </div>
+    </div>
+  </div>
+  <script src="/public/js/admin-merchant-soft-delete.js" defer></script>
+  <% } %>
 </body>
 </html>

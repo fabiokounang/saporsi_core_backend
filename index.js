@@ -37,6 +37,13 @@ app.use(cookieParser(process.env.COOKIE_SECRET || "saporsi_cookie_secret"));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+/** Full URL path (e.g. /auth/login). req.path alone is wrong under mounted routers (/login only). */
+function fullRequestPath(req) {
+  const mounted = `${req.baseUrl || ""}${req.path || ""}`;
+  if (mounted) return mounted;
+  return String(req.originalUrl || req.url || "").split("?")[0];
+}
+
 function wrapHtmlWithShell(html, req) {
   if (typeof html !== "string") return html;
 
@@ -44,11 +51,10 @@ function wrapHtmlWithShell(html, req) {
   if (!bodyMatch) return html;
 
   const bodyInner = bodyMatch[1];
-  const isAuthPage = req.path.startsWith("/auth");
+  const pathFull = fullRequestPath(req);
+  const isAuthPage = pathFull.startsWith("/auth");
   const isLoggedIn = Boolean(req.user);
   const userRole = req.user?.role || "";
-  const year = new Date().getFullYear();
-
   const navHtml =
     userRole === "merchant"
       ? `
@@ -67,6 +73,12 @@ function wrapHtmlWithShell(html, req) {
         <a href="/admin/orders">Orders</a>
       </nav>`;
 
+  const brandHref = userRole === "merchant" ? "/merchant" : "/admin";
+  const workspaceBadge = userRole === "merchant" ? "Merchant" : "Admin";
+  let headerTitle = "Operations";
+  if (pathFull === "/admin" || pathFull === "/admin/") headerTitle = "Mission Control";
+  else if (pathFull === "/merchant" || pathFull === "/merchant/") headerTitle = "Merchant Deck";
+
   const shellBody = (isAuthPage || !isLoggedIn)
     ? `
 <body class="shell shell-auth shell-guest">
@@ -79,19 +91,37 @@ function wrapHtmlWithShell(html, req) {
     : `
 <body class="shell shell-app">
   <div class="app-layout">
-    <aside class="shell-sidebar">
-      <a class="brand" href="/admin">Saporsi Core</a>
+    <div class="shell-drawer-backdrop" id="shell-drawer-backdrop" aria-hidden="true"></div>
+    <aside class="shell-sidebar" id="shell-drawer" aria-label="Navigasi utama">
+      <div class="shell-sidebar-top">
+        <a class="brand" href="${brandHref}">Saporsi Core</a>
+        <button type="button" class="shell-drawer-close" id="shell-drawer-close" aria-label="Tutup menu">
+          <span class="shell-drawer-close-icon" aria-hidden="true"></span>
+        </button>
+      </div>
       ${navHtml}
       <a class="shell-logout" href="/auth/logout">Logout</a>
     </aside>
     <main class="shell-main">
+      <div class="shell-mobile-bar">
+        <button type="button" class="shell-menu-toggle" id="shell-menu-toggle" aria-expanded="false" aria-controls="shell-drawer" aria-label="Buka menu">
+          <span class="shell-hamburger" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <div class="shell-mobile-brand">
+          <span class="shell-mobile-title">Saporsi</span>
+          <span class="shell-mobile-sub">${workspaceBadge}</span>
+        </div>
+      </div>
       <header class="shell-header">
-        <h1>${req.path === "/admin" ? "Admin Workspace" : "Operational Workspace"}</h1>
-        <p>${req.path}</p>
+        <h1>${headerTitle}</h1>
+        <p class="shell-header-path">${pathFull}</p>
       </header>
       <section class="shell-content">${bodyInner}</section>
     </main>
   </div>
+  <script src="/public/js/shell-nav.js" defer></script>
+  <script src="/public/js/table-mobile-cards.js" defer></script>
+  <script src="/public/js/machine-status-alerts.js" defer></script>
 </body>`;
 
   return html.replace(/<body[^>]*>[\s\S]*?<\/body>/i, shellBody);
@@ -118,7 +148,12 @@ app.use((req, res, next) => {
   res.render = (view, locals = {}, callback) => {
     const renderLocals = typeof locals === "function" ? {} : locals;
     const renderCallback = typeof locals === "function" ? locals : callback;
-    const linkTag = '<link rel="stylesheet" href="/public/theme-v2.css" />';
+    const headExtras = `  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&amp;family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/public/theme-v2.css" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#ff8a00" />`;
     const renderCb = (err, html) => {
       if (err) {
         if (typeof renderCallback === "function") return renderCallback(err);
@@ -127,7 +162,7 @@ app.use((req, res, next) => {
 
       const htmlWithTheme =
         typeof html === "string" && !html.includes('href="/public/theme-v2.css"')
-          ? html.replace("</head>", `  ${linkTag}\n</head>`)
+          ? html.replace("</head>", `${headExtras}\n</head>`)
           : html;
       const themedHtml = wrapHtmlWithShell(htmlWithTheme, req);
 
@@ -149,6 +184,14 @@ app.use((req, res, next) => {
 // Static Files
 // =========================
 app.use("/public", express.static(path.join(__dirname, "public")));
+app.get("/sw.js", (req, res) => {
+  res.type("application/javascript");
+  return res.sendFile(path.join(__dirname, "public", "sw.js"));
+});
+app.get("/manifest.webmanifest", (req, res) => {
+  res.type("application/manifest+json");
+  return res.sendFile(path.join(__dirname, "public", "manifest.webmanifest"));
+});
 
 // =========================
 // Routes

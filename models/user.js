@@ -63,14 +63,40 @@ exports.insertUser = async ({
 exports.getAuthStateById = async (userId) => {
   const sql = `
     SELECT
-      id,
-      role,
-      merchant_id,
-      is_active
-    FROM users
-    WHERE id = ?
+      u.id,
+      u.role,
+      u.merchant_id,
+      u.is_active,
+      m.deleted_at AS merchant_deleted_at
+    FROM users u
+    LEFT JOIN merchants m ON m.id = u.merchant_id
+    WHERE u.id = ?
     LIMIT ?
   `;
   const [rows] = await pool.query(sql, [userId, 1]);
   return rows[0] || null;
+};
+
+exports.deactivateByMerchantId = async (merchantId, conn) => {
+  const executor = conn || pool;
+  const sql = `
+    UPDATE users
+    SET is_active = 0
+    WHERE merchant_id = ?
+      AND role = 'merchant'
+  `;
+  const [result] = await executor.query(sql, [merchantId]);
+  return result.affectedRows;
+};
+
+exports.reactivateByMerchantId = async (merchantId, conn) => {
+  const executor = conn || pool;
+  const sql = `
+    UPDATE users
+    SET is_active = 1
+    WHERE merchant_id = ?
+      AND role = 'merchant'
+  `;
+  const [result] = await executor.query(sql, [merchantId]);
+  return result.affectedRows;
 };

@@ -69,7 +69,7 @@
               <option value="" <%= filters.merchant_id ? "" : "selected" %>>All</option>
               <% (merchants || []).forEach(function(m){ %>
                 <option value="<%= m.id %>" <%= String(filters.merchant_id) === String(m.id) ? "selected" : "" %>>
-                  <%= m.name %> (#<%= m.id %>)
+                  <%= m.merchant_code ? m.merchant_code + " · " : "" %><%= m.name %> (#<%= m.id %>)
                 </option>
               <% }) %>
             </select>
@@ -121,7 +121,7 @@
           %>
             <tr>
               <td class="mono"><b><%= r.order_code %></b><div class="muted">#<%= r.id %></div></td>
-              <td><b><%= r.merchant_name %></b><div class="muted mono">ID: <%= r.merchant_id %></div></td>
+              <td><b><%= r.merchant_name %></b><div class="muted mono"><%= r.merchant_code || "—" %> · ID <%= r.merchant_id %></div></td>
               <td><b><%= r.machine_code %></b><div class="muted"><%= r.machine_name || "-" %></div></td>
               <td><span class="badge <%= cls %>"><%= r.status %></span></td>
               <td class="mono">Rp <b><%= r.total_fmt %></b></td>

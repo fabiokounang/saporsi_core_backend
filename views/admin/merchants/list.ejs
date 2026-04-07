@@ -152,9 +152,30 @@
     }
     .select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
     .muted{color:var(--muted);font-size:13px}
+
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:100000;
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(3px);
+    }
+    .modal-overlay.is-open{display:flex;}
+    .modal-box{
+      background:#fff;border-radius:16px;max-width:440px;width:100%;
+      padding:22px 24px;box-shadow:0 24px 50px rgba(0,0,0,.18);
+      border:1px solid var(--border);
+    }
+    .modal-box h2{margin:0 0 10px;font-size:18px;color:#991b1b;}
+    .modal-box p{margin:0 0 8px;font-size:14px;line-height:1.55;color:#374151;}
+    .modal-box .modal-note{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;}
+    .modal-actions .btn{cursor:pointer;font:inherit;}
+    .btn-modal-danger{background:#b91c1c;color:#fff;border:0;}
+    .btn-modal-danger:hover{filter:brightness(1.05);}
+    .btn-modal-cancel{background:#fff;border:1px solid var(--border);color:#374151;}
   </style>
 </head>
 <body>
+  <% const archQs = (typeof archivedOnly !== 'undefined' && archivedOnly) ? '&archived=1' : ''; %>
   <div class="topbar">
     Saporsi Admin • Merchants
     <div class="sub">Kelola partner merchant (buat, edit, aktif/nonaktif)</div>
@@ -167,6 +188,11 @@
         <div class="meta">Total: <b><%= total %></b> • Page <b><%= page %></b> / <b><%= totalPages %></b></div>
       </div>
       <div class="actions">
+        <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+          <a class="btn btn-ghost" href="/admin/merchants">Merchant aktif</a>
+        <% } else { %>
+          <a class="btn btn-ghost" href="/admin/merchants?archived=1">Arsip (soft delete)</a>
+        <% } %>
         <a class="btn btn-primary" href="/admin/merchants/new">+ New Merchant</a>
         <a class="btn btn-ghost" href="/admin">Dashboard</a>
         <a class="btn btn-link" href="/auth/logout">Logout</a>
@@ -179,7 +205,13 @@
           <span class="pill">Showing <small><%= rows ? rows.length : 0 %></small> items</span>
           <span class="pill">Limit <small><%= limit %></small></span>
         </div>
-        <div class="right muted">Tip: klik “Edit” untuk ubah nama/status</div>
+        <div class="right muted">
+          <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+            Merchant di sini tidak tampil di dropdown / operasional; order lama tetap ada di DB.
+          <% } else { %>
+            Soft delete: nonaktifkan akun merchant terkait + sembunyikan dari operasional.
+          <% } %>
+        </div>
       </div>
 
       <% if (!rows || rows.length === 0) { %>
@@ -189,26 +221,45 @@
           <thead>
             <tr>
               <th style="width:90px;">ID</th>
+              <th style="width:130px;">Kode</th>
               <th>Name</th>
-              <th style="width:150px;">Status</th>
+              <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+                <th style="width:160px;">Diarsipkan</th>
+              <% } else { %>
+                <th style="width:150px;">Status</th>
+              <% } %>
               <th style="width:230px;">Updated</th>
-              <th style="width:110px;">Action</th>
+              <th style="width:180px;">Action</th>
             </tr>
           </thead>
           <tbody>
             <% rows.forEach(function(m){ %>
               <tr>
                 <td class="mono"><%= m.id %></td>
+                <td class="mono"><b><%= m.merchant_code || "—" %></b></td>
                 <td><b><%= m.name %></b></td>
-                <td>
-                  <% if (m.is_active) { %>
-                    <span class="badge on"><span class="dot"></span> Active</span>
-                  <% } else { %>
-                    <span class="badge off"><span class="dot"></span> Inactive</span>
+                <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+                  <td class="mono muted"><%= m.deleted_at_fmt || "—" %></td>
+                <% } else { %>
+                  <td>
+                    <% if (m.is_active) { %>
+                      <span class="badge on"><span class="dot"></span> Active</span>
+                    <% } else { %>
+                      <span class="badge off"><span class="dot"></span> Inactive</span>
+                    <% } %>
+                  </td>
+                <% } %>
+                <td class="mono"><%= m.updated_at %></td>
+                <td style="white-space:nowrap;">
+                  <a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/merchants/<%= m.id %>/edit"><%= (typeof archivedOnly !== 'undefined' && archivedOnly) ? 'Detail / Pulihkan' : 'Edit' %></a>
+                  <% if (!(typeof archivedOnly !== 'undefined' && archivedOnly)) { %>
+                    <% const sdLabel = [m.merchant_code || '—', m.name || ''].join(' · ').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); %>
+                    <form class="js-soft-delete-form" method="POST" action="/admin/merchants/<%= m.id %>/soft-delete" style="display:inline;">
+                      <button type="button" class="btn btn-ghost js-open-soft-delete" style="padding:8px 10px;color:#b91c1c;border-color:#fecaca;"
+                        data-merchant="<%= sdLabel %>">Hapus</button>
+                    </form>
                   <% } %>
                 </td>
-                <td class="mono"><%= m.updated_at %></td>
-                <td><a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/merchants/<%= m.id %>/edit">Edit</a></td>
               </tr>
             <% }) %>
           </tbody>
@@ -228,7 +279,7 @@
 
         <div class="pager">
           <label class="muted">Limit</label>
-          <select class="select" onchange="location.href='/admin/merchants?page=1&limit=' + this.value;">
+          <select class="select" onchange="location.href='/admin/merchants?page=1&limit=' + this.value + '<%= archQs %>';">
             <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
             <option value="20" <%= limit === 20 ? 'selected' : '' %>>20</option>
             <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
@@ -238,15 +289,29 @@
           <% const next = page < totalPages ? page + 1 : totalPages; %>
 
           <% if (page > 1) { %>
-            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= prev %>&limit=<%= limit %>">Prev</a>
+            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= prev %>&limit=<%= limit %><%= archQs %>">Prev</a>
           <% } %>
 
           <% if (page < totalPages) { %>
-            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= next %>&limit=<%= limit %>">Next</a>
+            <a class="btn btn-primary" style="padding:10px 12px;" href="/admin/merchants?page=<%= next %>&limit=<%= limit %><%= archQs %>">Next</a>
           <% } %>
         </div>
       </div>
     </div>
   </div>
+
+  <div id="soft-delete-modal" class="modal-overlay" role="presentation" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+      <h2 id="sdm-title">Soft delete merchant?</h2>
+      <p>Anda akan mengarsipkan merchant berikut dari operasional:</p>
+      <p id="sdm-merchant" style="font-weight:800;color:#111827;"></p>
+      <p class="modal-note">Akun user dengan role merchant untuk merchant ini akan dinonaktifkan. Data order tetap ada di database.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-modal-cancel" id="sdm-cancel">Batal</button>
+        <button type="button" class="btn btn-modal-danger" id="sdm-confirm">Ya, soft delete</button>
+      </div>
+    </div>
+  </div>
+  <script src="/public/js/admin-merchant-soft-delete.js" defer></script>
 </body>
 </html>

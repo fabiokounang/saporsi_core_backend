@@ -16,12 +16,13 @@ exports.listAllForSelect = async () => {
     SELECT
       id,
       code,
-      name
+      name,
+      is_active
     FROM machines
     ORDER BY code ASC
     LIMIT ?
   `;
-  const [rows] = await pool.query(sql, [1000]);
+  const [rows] = await pool.query(sql, [5000]);
   return rows;
 };
 
@@ -32,12 +33,23 @@ exports.listPaginated = async ({ limit, offset }) => {
       m.id,
       m.code,
       m.name,
+      m.category,
+      m.manufactured_at,
+      m.installed_at,
+      m.maintenance_at,
+      m.maintenance_mode,
+      m.purchase_date,
+      m.lifespan_months,
+      m.last_maintenance_at,
+      m.total_runtime_hours,
+      m.total_downtime_hours,
       m.location_id,
       l.name AS location_name,
+      l.deleted_at AS location_deleted_at,
       m.is_active,
       m.updated_at
     FROM machines m
-    INNER JOIN locations l ON l.id = m.location_id
+    LEFT JOIN locations l ON l.id = m.location_id
     ORDER BY m.id DESC
     LIMIT ? OFFSET ?
   `;
@@ -51,13 +63,24 @@ exports.findById = async (id) => {
       m.id,
       m.code,
       m.name,
+      m.category,
+      m.manufactured_at,
+      m.installed_at,
+      m.maintenance_at,
+      m.maintenance_mode,
+      m.purchase_date,
+      m.lifespan_months,
+      m.last_maintenance_at,
+      m.total_runtime_hours,
+      m.total_downtime_hours,
       m.location_id,
       l.name AS location_name,
+      l.deleted_at AS location_deleted_at,
       m.is_active,
       m.created_at,
       m.updated_at
     FROM machines m
-    INNER JOIN locations l ON l.id = m.location_id
+    LEFT JOIN locations l ON l.id = m.location_id
     WHERE m.id = ?
     LIMIT ?
   `;
@@ -80,30 +103,91 @@ exports.findByCode = async (code) => {
   return rows[0] || null;
 };
 
-exports.create = async ({ code, name, location_id, is_active }) => {
+exports.create = async ({
+  code,
+  name,
+  category,
+  manufactured_at,
+  installed_at,
+  maintenance_at,
+  maintenance_mode,
+  purchase_date,
+  lifespan_months,
+  last_maintenance_at,
+  total_runtime_hours,
+  total_downtime_hours,
+  location_id,
+  is_active,
+}) => {
   const sql = `
     INSERT INTO machines (
       code,
       name,
+      category,
+      manufactured_at,
+      installed_at,
+      maintenance_at,
+      maintenance_mode,
+      purchase_date,
+      lifespan_months,
+      last_maintenance_at,
+      total_runtime_hours,
+      total_downtime_hours,
       location_id,
       is_active
-    ) VALUES (?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   const [result] = await pool.query(sql, [
     code,
     name ?? null,
+    category ?? null,
+    manufactured_at ?? null,
+    installed_at ?? null,
+    maintenance_at ?? null,
+    maintenance_mode ?? "auto",
+    purchase_date ?? null,
+    lifespan_months ?? null,
+    last_maintenance_at ?? null,
+    total_runtime_hours ?? 0,
+    total_downtime_hours ?? 0,
     location_id,
     is_active,
   ]);
   return result.insertId;
 };
 
-exports.updateById = async ({ id, code, name, location_id, is_active }) => {
+exports.updateById = async ({
+  id,
+  code,
+  name,
+  category,
+  manufactured_at,
+  installed_at,
+  maintenance_at,
+  maintenance_mode,
+  purchase_date,
+  lifespan_months,
+  last_maintenance_at,
+  total_runtime_hours,
+  total_downtime_hours,
+  location_id,
+  is_active,
+}) => {
   const sql = `
     UPDATE machines
     SET
       code = ?,
       name = ?,
+      category = ?,
+      manufactured_at = ?,
+      installed_at = ?,
+      maintenance_at = ?,
+      maintenance_mode = ?,
+      purchase_date = ?,
+      lifespan_months = ?,
+      last_maintenance_at = ?,
+      total_runtime_hours = ?,
+      total_downtime_hours = ?,
       location_id = ?,
       is_active = ?
     WHERE id = ?
@@ -112,6 +196,16 @@ exports.updateById = async ({ id, code, name, location_id, is_active }) => {
   const [result] = await pool.query(sql, [
     code,
     name ?? null,
+    category ?? null,
+    manufactured_at ?? null,
+    installed_at ?? null,
+    maintenance_at ?? null,
+    maintenance_mode ?? "auto",
+    purchase_date ?? null,
+    lifespan_months ?? null,
+    last_maintenance_at ?? null,
+    total_runtime_hours ?? 0,
+    total_downtime_hours ?? 0,
     location_id,
     is_active,
     id,
@@ -120,19 +214,8 @@ exports.updateById = async ({ id, code, name, location_id, is_active }) => {
   return result.affectedRows === 1;
 };
 
-// models/machine.js (tambahkan)
-exports.listAllForSelect = async () => {
-  const sql = `
-    SELECT
-      id,
-      code,
-      name,
-      is_active
-    FROM machines
-    ORDER BY id DESC
-    LIMIT ?
-  `;
-  const [rows] = await pool.query(sql, [5000]);
-  return rows;
+exports.countByLocationId = async (locationId) => {
+  const sql = `SELECT COUNT(1) AS c FROM machines WHERE location_id = ?`;
+  const [rows] = await pool.query(sql, [locationId]);
+  return Number(rows[0]?.c || 0);
 };
-

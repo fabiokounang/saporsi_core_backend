@@ -108,19 +108,47 @@
       background:#fff;font-weight:900;font-size:13px;color:#374151;outline:none;
     }
     .select:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,138,0,.16)}
+    .loc-banner{margin-bottom:14px;padding:12px 14px;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:14px;}
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:100000;
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(3px);
+    }
+    .modal-overlay.is-open{display:flex;}
+    .modal-box{
+      background:#fff;border-radius:16px;max-width:440px;width:100%;
+      padding:22px 24px;box-shadow:0 24px 50px rgba(0,0,0,.18);
+      border:1px solid var(--border);
+    }
+    .modal-box h2{margin:0 0 10px;font-size:18px;color:#991b1b;}
+    .modal-box p{margin:0 0 8px;font-size:14px;line-height:1.55;color:#374151;}
+    .modal-note{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;}
+    .btn-modal-danger{background:#b91c1c;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
+    .btn-modal-cancel{background:#fff;border:1px solid var(--border);color:#374151;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
   </style>
 </head>
 <body>
+  <% const archQs = (typeof archivedOnly !== 'undefined' && archivedOnly) ? '&archived=1' : ''; %>
   <div class="topbar">Saporsi Admin • Locations</div>
 
   <div class="wrap">
+    <% if (typeof queryError !== 'undefined' && queryError) { %>
+      <div class="loc-banner"><b>Perhatian:</b> <%= queryError %></div>
+    <% } %>
+
     <div class="header">
       <div>
-        <h1>Locations</h1>
-        <div class="meta">Total: <b><%= total %></b> • Page <b><%= page %></b>/<b><%= totalPages %></b></div>
+        <h1><%= (typeof archivedOnly !== 'undefined' && archivedOnly) ? 'Lokasi master (arsip)' : 'Lokasi master' %></h1>
+        <div class="meta">Hanya lokasi induk. Sub-lokasi lewat menu <b>Detail</b>. Total: <b><%= total %></b> • Hal. <b><%= page %></b>/<b><%= totalPages %></b></div>
       </div>
       <div class="actions">
-        <a class="btn btn-primary" href="/admin/locations/new">+ New Location</a>
+        <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+          <a class="btn btn-ghost" href="/admin/locations">Lokasi aktif</a>
+        <% } else { %>
+          <a class="btn btn-ghost" href="/admin/locations?archived=1">Arsip</a>
+        <% } %>
+        <a class="btn btn-primary" href="/admin/locations/new">+ Lokasi master</a>
         <a class="btn btn-ghost" href="/admin">Dashboard</a>
         <a class="btn btn-link" href="/auth/logout">Logout</a>
       </div>
@@ -132,36 +160,53 @@
           <span class="pill">Showing <small><%= rows ? rows.length : 0 %></small> items</span>
           <span class="pill">Limit <small><%= limit %></small></span>
         </div>
-        <div class="muted">Tip: isi address supaya tim lapangan tidak bingung</div>
+        <div class="muted">
+          <% if (typeof archivedOnly !== 'undefined' && archivedOnly) { %>
+            Lokasi diarsipkan tidak muncul di pilihan mesin.
+          <% } else { %>
+            Tambah sub dari halaman <b>Detail</b> master. Hapus master hanya jika tidak ada sub aktif &amp; tidak ada mesin.
+          <% } %>
+        </div>
       </div>
 
       <% if (!rows || rows.length === 0) { %>
-        <div class="empty">Belum ada lokasi. Klik <b>New Location</b> untuk menambahkan.</div>
+        <div class="empty">Belum ada lokasi master. Klik <b>+ Lokasi master</b> untuk menambahkan.</div>
       <% } else { %>
         <table>
           <thead>
             <tr>
-              <th style="width:90px;">ID</th>
-              <th>Name</th>
-              <th>Address</th>
-              <th style="width:150px;">Status</th>
-              <th style="width:110px;">Action</th>
+              <th style="width:72px;">ID</th>
+              <th>Nama</th>
+              <th>Alamat / catatan</th>
+              <th style="width:120px;">Status</th>
+              <th style="width:240px;">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            <% rows.forEach(function(l){ %>
+            <% rows.forEach(function(l){
+                 const locDelLabel = (l.name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+            %>
               <tr>
                 <td class="mono"><%= l.id %></td>
                 <td><b><%= l.name %></b><div class="muted mono" style="margin-top:4px;">Updated: <%= l.updated_at %></div></td>
-                <td class="muted"><%= l.address || '-' %><% if (l.notes) { %><div style="margin-top:6px;"><b>Notes:</b> <%= l.notes %></div><% } %></td>
+                <td class="muted"><%= l.address || '—' %><% if (l.notes) { %><div style="margin-top:6px;"><b>Catatan:</b> <%= l.notes %></div><% } %></td>
                 <td>
                   <% if (l.is_active) { %>
-                    <span class="badge on"><span class="dot"></span> Active</span>
+                    <span class="badge on"><span class="dot"></span> Aktif</span>
                   <% } else { %>
-                    <span class="badge off"><span class="dot"></span> Inactive</span>
+                    <span class="badge off"><span class="dot"></span> Nonaktif</span>
                   <% } %>
                 </td>
-                <td><a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/locations/<%= l.id %>/edit">Edit</a></td>
+                <td style="white-space:nowrap;">
+                  <a class="btn btn-primary" style="padding:8px 10px;" href="/admin/locations/<%= l.id %>">Detail</a>
+                  <a class="btn btn-ghost" style="padding:8px 10px;" href="/admin/locations/<%= l.id %>/edit">Edit</a>
+                  <% if (!(typeof archivedOnly !== 'undefined' && archivedOnly)) { %>
+                    <form class="js-soft-delete-form" method="POST" action="/admin/locations/<%= l.id %>/soft-delete" style="display:inline;">
+                      <button type="button" class="btn btn-ghost js-open-soft-delete" style="padding:8px 10px;color:#b91c1c;border-color:#fecaca;"
+                        data-delete-label="<%= locDelLabel %>">Hapus</button>
+                    </form>
+                  <% } %>
+                </td>
               </tr>
             <% }) %>
           </tbody>
@@ -181,7 +226,7 @@
 
         <div class="pager">
           <label class="muted">Limit</label>
-          <select class="select" onchange="location.href='/admin/locations?page=1&limit=' + this.value;">
+          <select class="select" onchange="location.href='/admin/locations?page=1&limit=' + this.value + '<%= archQs %>';">
             <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
             <option value="20" <%= limit === 20 ? 'selected' : '' %>>20</option>
             <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
@@ -191,14 +236,28 @@
           <% const next = page < totalPages ? page + 1 : totalPages; %>
 
           <% if (page > 1) { %>
-            <a class="btn btn-primary" href="/admin/locations?page=<%= prev %>&limit=<%= limit %>">Prev</a>
+            <a class="btn btn-primary" href="/admin/locations?page=<%= prev %>&limit=<%= limit %><%= archQs %>">Prev</a>
           <% } %>
           <% if (page < totalPages) { %>
-            <a class="btn btn-primary" href="/admin/locations?page=<%= next %>&limit=<%= limit %>">Next</a>
+            <a class="btn btn-primary" href="/admin/locations?page=<%= next %>&limit=<%= limit %><%= archQs %>">Next</a>
           <% } %>
         </div>
       </div>
     </div>
   </div>
+
+  <div id="soft-delete-modal" class="modal-overlay" role="presentation" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+      <h2 id="sdm-title">Arsipkan lokasi?</h2>
+      <p>Lokasi berikut akan diarsipkan (soft delete):</p>
+      <p id="sdm-merchant" style="font-weight:800;color:#111827;"></p>
+      <p class="modal-note">Lokasi tidak lagi muncul di pilihan mesin. Data order/mesin yang sudah mereferensi ID ini tetap aman di database.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-cancel" id="sdm-cancel">Batal</button>
+        <button type="button" class="btn-modal-danger" id="sdm-confirm">Ya, arsipkan</button>
+      </div>
+    </div>
+  </div>
+  <script src="/public/js/admin-merchant-soft-delete.js" defer></script>
 </body>
 </html>

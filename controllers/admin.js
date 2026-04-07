@@ -24,7 +24,7 @@ exports.renderHome = async (req, res, next) => {
           dateTo,
         }),
         merchantModel.countAll(),
-        locationModel.countAll(),
+        locationModel.countAll({ mastersOnly: true }),
         machineModel.countAll(),
         productModel.countAll(),
         slotModel.countAll(),

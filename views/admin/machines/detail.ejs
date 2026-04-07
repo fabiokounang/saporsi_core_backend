@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= title %></title>
+  <style>
+    :root{
+      --bg:#fff6ec;--card:#fff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;
+      --orange:#ff8a00;--orange2:#ffb866;--shadow:0 18px 45px rgba(0,0,0,.08);--radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
+    .wrap{max-width:720px;margin:0 auto;padding:22px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
+    h1{margin:0 0 6px;font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+    .idpill{display:inline-flex;margin-top:10px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);font-size:12px;font-weight:800;color:#374151}
+    dl{margin:18px 0 0;padding:0}
+    dt{margin:14px 0 4px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#7c2d12}
+    dd{margin:0;padding:12px 14px;background:#fffdf9;border:1px solid #f1e7dc;border-radius:12px;font-size:14px;line-height:1.45}
+    .mono{font-variant-numeric:tabular-nums}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid var(--border);}
+    .dot{width:8px;height:8px;border-radius:999px}
+    .on{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}.on .dot{background:#10b981}
+    .off{background:#fef2f2;color:#991b1b;border-color:#fecaca}.off .dot{background:#ef4444}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;align-items:center;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:12px;font-weight:900;font-size:13px;border:1px solid transparent;cursor:pointer;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
+    .btn-secondary{background:#fff;border:1px solid var(--border);color:#7c2d12}
+    .btn-secondary:hover{background:#fff7ed}
+  </style>
+</head>
+<body>
+  <div class="topbar">Saporsi Admin • Machine Detail</div>
+
+  <div class="wrap">
+    <h1><%= m.code %></h1>
+    <div class="muted"><%= m.name || 'Tanpa nama' %></div>
+    <div class="idpill">ID #<%= m.id %></div>
+
+    <div class="card" style="margin-top:18px;">
+      <dl>
+        <dt>Status</dt>
+        <dd>
+          <% if (m.is_active) { %>
+            <span class="badge on"><span class="dot"></span> Active</span>
+          <% } else { %>
+            <span class="badge off"><span class="dot"></span> Inactive</span>
+          <% } %>
+        </dd>
+
+        <dt>Kategori</dt>
+        <dd class="mono"><%= m.category || '-' %></dd>
+
+        <dt>Lokasi</dt>
+        <dd><b><%= m.location_name || ('ID #' + m.location_id) %></b><% if (m.location_deleted_at) { %> <span class="muted">(lokasi arsip)</span><% } %></dd>
+
+        <dt>Tanggal dibuat pabrik</dt>
+        <dd class="mono"><%= m.manufactured_at_fmt %></dd>
+
+        <dt>Umur sejak pabrik</dt>
+        <dd class="mono"><%= m.lifespan_since_factory_fmt %></dd>
+
+        <dt>Tanggal dipasang</dt>
+        <dd class="mono"><%= m.installed_at_fmt %></dd>
+
+        <dt>Umur sejak pasang</dt>
+        <dd class="mono"><%= m.lifespan_since_install_fmt %></dd>
+
+        <dt>Tanggal pembelian</dt>
+        <dd class="mono"><%= m.purchase_date_fmt %></dd>
+
+        <dt>Last MT</dt>
+        <dd class="mono"><%= m.last_maintenance_at_fmt %></dd>
+
+        <dt>Next MT</dt>
+        <dd class="mono"><%= m.next_maintenance_at_fmt %> <span class="muted">(<%= m.maintenance_mode === 'manual' ? 'manual' : 'auto' %>)</span></dd>
+
+        <dt>Total runtime</dt>
+        <dd class="mono"><%= m.total_runtime_hours_fmt %></dd>
+
+        <dt>Total downtime</dt>
+        <dd class="mono"><%= m.total_downtime_hours_fmt %></dd>
+
+        <dt>Dibuat (record)</dt>
+        <dd class="mono"><%= m.created_at %></dd>
+
+        <dt>Diperbarui</dt>
+        <dd class="mono"><%= m.updated_at %></dd>
+      </dl>
+
+      <div class="row">
+        <a class="btn btn-primary" href="/admin/machines/<%= m.id %>/edit">Edit</a>
+        <a class="btn btn-secondary" href="/admin/machines">Kembali ke daftar</a>
+        <a class="btn btn-secondary" href="/admin">Dashboard</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

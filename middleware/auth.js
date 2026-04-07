@@ -62,6 +62,13 @@ exports.requireAuth = async (req, res, next) => {
       return deny(req, res);
     }
 
+    // merchant soft-deleted or missing merchant row
+    if (dbUser.role === "merchant") {
+      if (!dbMerchantId || dbUser.merchant_deleted_at != null) {
+        return deny(req, res);
+      }
+    }
+
     // attach user for downstream use
     req.user = {
       id: String(dbUser.id),

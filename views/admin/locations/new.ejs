@@ -33,16 +33,29 @@
     .alert{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger-text);
       padding:12px 12px;border-radius:12px;margin-bottom:12px;font-size:13px}
     .hint{margin-top:6px;color:var(--muted);font-size:12.5px}
+    .master-banner{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:14px;}
   </style>
 </head>
 <body>
-  <div class="topbar">Saporsi Admin • New Location</div>
+  <div class="topbar">Saporsi Admin • <%= typeof isSubFlow !== 'undefined' && isSubFlow ? 'Sub-lokasi' : 'Lokasi master' %></div>
 
   <div class="wrap">
-    <h1>Tambah Location</h1>
-    <div class="muted">Lokasi tempat vending machine ditempatkan.</div>
+    <h1><%= typeof isSubFlow !== 'undefined' && isSubFlow ? 'Tambah sub-lokasi' : 'Tambah lokasi master' %></h1>
+    <div class="muted">
+      <% if (typeof isSubFlow !== 'undefined' && isSubFlow && presetMasterName) { %>
+        Sub di bawah master: <b><%= presetMasterName %></b>. Isi nama (mis. Terminal 1A).
+      <% } else { %>
+        Di sini hanya untuk <b>lokasi master</b> (bandara / kawasan). Sub-lokasi ditambah dari halaman <b>Detail</b> master.
+      <% } %>
+    </div>
 
     <div style="height:14px;"></div>
+
+    <% if (typeof isSubFlow !== 'undefined' && isSubFlow && value?.parent_id) { %>
+      <div class="master-banner">
+        Induk tetap: <b><%= presetMasterName || ('ID ' + value.parent_id) %></b> — tidak bisa diubah di form ini.
+      </div>
+    <% } %>
 
     <div class="card">
       <% if (error) { %>
@@ -50,26 +63,35 @@
       <% } %>
 
       <form method="POST" action="/admin/locations">
-        <label for="name">Location Name</label>
-        <input id="name" name="name" value="<%= value?.name || '' %>" placeholder="contoh: Bandara Soetta T3 - Gate 12" required />
-        <div class="hint">Nama harus jelas supaya gampang dipilih saat assign mesin.</div>
+        <% if (typeof isSubFlow !== 'undefined' && isSubFlow) { %>
+          <input type="hidden" name="sub_flow" value="1" />
+          <input type="hidden" name="parent_id" value="<%= value?.parent_id || '' %>" />
+        <% } %>
 
-        <label for="address">Address (optional)</label>
-        <input id="address" name="address" value="<%= value?.address || '' %>" placeholder="contoh: Terminal 3, dekat Gate 12, sebelah coffee shop" />
-        <div class="hint">Isi yang detail untuk tim lapangan.</div>
+        <% if (!(typeof isSubFlow !== 'undefined' && isSubFlow)) { %>
+          <p class="muted" style="margin:0 0 8px;font-size:14px;">Tidak ada pemilihan induk — ini selalu lokasi master baru.</p>
+        <% } %>
 
-        <label for="notes">Notes (optional)</label>
-        <textarea id="notes" name="notes" placeholder="contoh: akses listrik via tenant A, izin security jam 10 malam"><%= value?.notes || '' %></textarea>
+        <label for="name">Nama lokasi</label>
+        <input id="name" name="name" value="<%= value?.name || '' %>" placeholder="<%= (typeof isSubFlow !== 'undefined' && isSubFlow) ? 'mis. Terminal 1A' : 'mis. Bandara Soekarno-Hatta' %>" required />
+        <div class="hint">Nama unik per level: tidak boleh sama dengan lokasi lain di bawah induk yang sama.</div>
+
+        <label for="address">Alamat (opsional)</label>
+        <input id="address" name="address" value="<%= value?.address || '' %>" placeholder="Detail alamat / area" />
+
+        <label for="notes">Catatan (opsional)</label>
+        <textarea id="notes" name="notes" placeholder="Akses, izin security, dll."><%= value?.notes || '' %></textarea>
 
         <label for="is_active">Status</label>
         <select id="is_active" name="is_active">
-          <option value="1" <%= (value?.is_active ?? 1) ? 'selected' : '' %>>Active</option>
-          <option value="0" <%= (value?.is_active ?? 1) ? '' : 'selected' %>>Inactive</option>
+          <option value="1" <%= (value?.is_active ?? 1) ? 'selected' : '' %>>Aktif</option>
+          <option value="0" <%= (value?.is_active ?? 1) ? '' : 'selected' %>>Nonaktif</option>
         </select>
 
         <div class="row">
-          <button class="btn btn-primary" type="submit">Create Location</button>
-          <a class="btn btn-secondary" href="/admin/locations">Cancel</a>
+          <button class="btn btn-primary" type="submit">Simpan</button>
+          <% const cancelHref = (typeof isSubFlow !== 'undefined' && isSubFlow && value?.parent_id) ? ('/admin/locations/' + value.parent_id) : '/admin/locations'; %>
+          <a class="btn btn-secondary" href="<%= cancelHref %>">Batal</a>
           <a class="btn btn-secondary" href="/admin">Dashboard</a>
         </div>
       </form>

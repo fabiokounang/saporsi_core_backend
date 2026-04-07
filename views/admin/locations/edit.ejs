@@ -14,7 +14,7 @@
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
     .topbar{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:16px 22px;font-weight:900;}
     .wrap{max-width:760px;margin:0 auto;padding:22px;}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;}
     h1{margin:0 0 10px;font-size:22px}
     .muted{color:var(--muted);font-size:13px}
     label{display:block;margin:14px 0 6px;font-weight:900;font-size:13px;color:#374151}
@@ -30,6 +30,8 @@
     .btn-primary{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;box-shadow:0 14px 28px rgba(255,138,0,.28)}
     .btn-secondary{background:#fff;border-color:var(--border);color:#7c2d12}
     .btn-secondary:hover{background:#fff7ed}
+    .btn-danger{background:#fff;border:1px solid #fecaca;color:#b91c1c;}
+    .btn-danger:hover{background:#fef2f2}
     .alert{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger-text);
       padding:12px 12px;border-radius:12px;margin-bottom:12px;font-size:13px}
     .hint{margin-top:6px;color:var(--muted);font-size:12.5px}
@@ -38,21 +40,64 @@
       padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;
       color:#374151;font-weight:900;font-size:12px;
     }
+    .banner-warn{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;padding:12px;border-radius:12px;margin-bottom:12px;font-size:13px;}
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:100000;
+      display:none;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(3px);
+    }
+    .modal-overlay.is-open{display:flex;}
+    .modal-box{
+      background:#fff;border-radius:16px;max-width:440px;width:100%;
+      padding:22px 24px;box-shadow:0 24px 50px rgba(0,0,0,.18);
+      border:1px solid var(--border);
+    }
+    .modal-box h2{margin:0 0 10px;font-size:18px;color:#991b1b;}
+    .modal-box p{margin:0 0 8px;font-size:14px;line-height:1.55;color:#374151;}
+    .modal-note{font-size:13px;color:var(--muted);margin-bottom:18px;}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;}
+    .btn-modal-danger{background:#b91c1c;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
+    .btn-modal-cancel{background:#fff;border:1px solid var(--border);color:#374151;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;font:inherit;}
   </style>
 </head>
 <body>
-  <div class="topbar">Saporsi Admin • Edit Location</div>
+  <div class="topbar">Saporsi Admin • <%= isArchived ? 'Location (arsip)' : 'Edit Location' %></div>
 
   <div class="wrap">
     <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
       <div>
-        <h1>Edit Location</h1>
-        <div class="muted">Update detail lokasi untuk operasional.</div>
+        <h1><%= isArchived ? 'Location (diarsipkan)' : 'Edit Location' %></h1>
+        <div class="muted"><%= isArchived ? 'Pulihkan untuk dipakai lagi di pilihan mesin.' : 'Ubah master/sub, alamat, dan status.' %></div>
       </div>
-      <div class="idpill">Location ID: <%= location.id %></div>
+      <div class="idpill">ID: <%= location.id %></div>
     </div>
 
     <div style="height:14px;"></div>
+
+    <% if (isArchived) { %>
+      <div class="banner-warn">
+        Diarsipkan pada <b><%= location.deleted_at ? new Date(location.deleted_at).toLocaleString('id-ID') : '—' %></b>.
+        <% if (location.parent_id && !location.parent_name) { %>
+          <div style="margin-top:8px;">Induk tercatat tapi mungkin ikut terarsip — pulihkan master dulu jika perlu.</div>
+        <% } %>
+      </div>
+      <div class="card">
+        <form method="POST" action="/admin/locations/<%= location.id %>/restore">
+          <button class="btn btn-primary" type="submit">Pulihkan lokasi</button>
+          <% if (location.parent_id) { %>
+            <a class="btn btn-secondary" href="/admin/locations/<%= location.parent_id %>">Kembali ke master</a>
+          <% } %>
+          <a class="btn btn-secondary" href="/admin/locations?archived=1">Kembali ke arsip</a>
+          <a class="btn btn-secondary" href="/admin/locations">Lokasi aktif</a>
+        </form>
+      </div>
+      <div class="card">
+        <label>Nama (baca saja)</label>
+        <input value="<%= location.name %>" disabled />
+        <label>Induk (baca saja)</label>
+        <input value="<%= location.parent_name || '— (master)' %>" disabled />
+      </div>
+    <% } else { %>
 
     <div class="card">
       <% if (error) { %>
@@ -60,15 +105,42 @@
       <% } %>
 
       <form method="POST" action="/admin/locations/<%= location.id %>">
-        <label for="name">Location Name</label>
+        <label for="parent_id">Induk</label>
+        <% if (typeof childCount !== 'undefined' && childCount > 0) { %>
+          <input type="hidden" name="parent_id" value="<%= location.parent_id || '' %>" />
+          <select id="parent_id" disabled style="opacity:.85;">
+            <option value="">— Lokasi master —</option>
+            <% (masters || []).forEach(function(m){ %>
+              <% if (Number(m.id) !== Number(location.id)) { %>
+                <option value="<%= m.id %>" <%= String(location.parent_id || '') === String(m.id) ? 'selected' : '' %>><%= m.name %></option>
+              <% } %>
+            <% }) %>
+          </select>
+        <% } else { %>
+          <select id="parent_id" name="parent_id">
+            <option value="">— Lokasi master (tidak punya induk) —</option>
+            <% (masters || []).forEach(function(m){ %>
+              <% if (Number(m.id) !== Number(location.id)) { %>
+                <option value="<%= m.id %>" <%= String(value?.parent_id || '') === String(m.id) ? 'selected' : '' %>><%= m.name %></option>
+              <% } %>
+            <% }) %>
+          </select>
+        <% } %>
+        <div class="hint">
+          <% if (typeof childCount !== 'undefined' && childCount > 0) { %>
+            Lokasi ini punya <b><%= childCount %></b> sub aktif — tidak bisa dijadikan sub sampai sub-nya dihapus/diubah.
+          <% } else { %>
+            Pilih master untuk menjadikan ini sub-lokasi, atau kosongkan untuk master.
+          <% } %>
+        </div>
+
+        <label for="name">Nama lokasi</label>
         <input id="name" name="name" value="<%= value?.name || '' %>" required />
-        <div class="hint">Nama harus tetap jelas dan konsisten.</div>
 
-        <label for="address">Address (optional)</label>
+        <label for="address">Alamat (opsional)</label>
         <input id="address" name="address" value="<%= value?.address || '' %>" />
-        <div class="hint">Detail lokasi membantu tim lapangan.</div>
 
-        <label for="notes">Notes (optional)</label>
+        <label for="notes">Catatan (opsional)</label>
         <textarea id="notes" name="notes"><%= value?.notes || '' %></textarea>
 
         <label for="is_active">Status</label>
@@ -78,12 +150,40 @@
         </select>
 
         <div class="row">
-          <button class="btn btn-primary" type="submit">Save Changes</button>
-          <a class="btn btn-secondary" href="/admin/locations">Back</a>
+          <button class="btn btn-primary" type="submit">Simpan</button>
+          <% const backHref = location.parent_id ? ('/admin/locations/' + location.parent_id) : ('/admin/locations/' + location.id); %>
+          <a class="btn btn-secondary" href="<%= backHref %>">Kembali</a>
           <a class="btn btn-secondary" href="/admin">Dashboard</a>
         </div>
       </form>
     </div>
+
+    <div class="card" style="border-color:#fecaca;">
+      <div class="muted" style="margin-bottom:10px;font-weight:800;color:#991b1b;">Zona bahaya</div>
+      <p class="muted" style="margin:0 0 12px;font-size:13px;">
+        Arsip hanya jika tidak ada <b>sub-lokasi aktif</b> dan tidak ada <b>mesin</b> yang memakai lokasi ini.
+      </p>
+      <% const edDelLabel = [location.parent_name || '', location.name || ''].filter(Boolean).join(' › ').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); %>
+      <form class="js-soft-delete-form" method="POST" action="/admin/locations/<%= location.id %>/soft-delete">
+        <button class="btn btn-danger js-open-soft-delete" type="button" data-delete-label="<%= edDelLabel %>">Arsipkan lokasi</button>
+      </form>
+    </div>
+
+    <div id="soft-delete-modal" class="modal-overlay" role="presentation" aria-hidden="true">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sdm-title">
+        <h2 id="sdm-title">Arsipkan lokasi?</h2>
+        <p>Lokasi berikut akan diarsipkan:</p>
+        <p id="sdm-merchant" style="font-weight:800;color:#111827;"></p>
+        <p class="modal-note">Tidak muncul lagi di pilihan mesin. Referensi data lama tetap di database.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn-modal-cancel" id="sdm-cancel">Batal</button>
+          <button type="button" class="btn-modal-danger" id="sdm-confirm">Ya, arsipkan</button>
+        </div>
+      </div>
+    </div>
+    <script src="/public/js/admin-merchant-soft-delete.js" defer></script>
+
+    <% } %>
   </div>
 </body>
 </html>

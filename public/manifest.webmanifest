@@ -1,0 +1,10 @@
+{
+  "name": "Saporsi Core",
+  "short_name": "Saporsi",
+  "start_url": "/admin",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#ff8a00",
+  "description": "Saporsi Core admin operations.",
+  "icons": []
+}
